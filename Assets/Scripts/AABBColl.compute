@@ -1,0 +1,54 @@
+﻿#pragma kernel main
+
+struct AABBdata
+{
+    float3 max;
+    float3 min;
+    float3 localMin;
+    float3 localMax;
+};
+
+StructuredBuffer<AABBdata> boxes;
+
+RWStructuredBuffer<int> can_move_boxes;
+
+int num_boxes;
+int num_per_group;
+float3 displacement;
+
+bool intersect(AABBdata a, AABBdata b)
+{
+    return a.min.x <= b.max.x &&
+            a.max.x >= b.min.x &&
+            
+            a.min.y <= b.max.y &&
+            a.max.y >= b.min.y &&
+            
+            a.min.z <= b.max.z &&
+            a.max.z >= b.min.z;
+}
+
+[numthreads(32, 1, 1)]
+void main(uint3 id: SV_DispatchThreadID)
+{
+    if( (int)id.x + num_per_group > num_boxes )
+    {
+        return;
+    }
+
+    for(int i = 0; i < num_per_group; ++i)
+    {
+        const int current_box = id.x + i;
+        AABBdata box = boxes[current_box];
+        box.max += displacement;
+        box.min += displacement;
+        
+        for(int other = 0; other < num_boxes; other++)
+        {
+            if( other != current_box )
+            {
+                can_move_boxes[current_box] = intersect(box, boxes[other]);
+            }
+        }
+    }
+}

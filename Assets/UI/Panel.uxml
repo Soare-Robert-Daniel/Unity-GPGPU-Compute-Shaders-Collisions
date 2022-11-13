@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:GroupBox style="width: 353px;">
+        <ui:Button text="100 de sfere ; 250 de cuburi; 500 de cilindre" display-tooltip-when-elided="true" />
+        <ui:Button text="250 de sfere ; 500 de cuburi; 1000 de cilindre" display-tooltip-when-elided="true" />
+        <ui:Button text="500 de sfere ; 1000 de cuburi; 2500 de cilindre" display-tooltip-when-elided="true" />
+        <ui:GroupBox style="background-color: rgb(0, 0, 0);">
+            <ui:GroupBox style="flex-direction: row; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; background-color: rgba(0, 0, 0, 0.38); font-size: 14px;">
+                <ui:Label tabindex="-1" text="FPS" display-tooltip-when-elided="true" style="color: rgb(255, 255, 255);" />
+                <ui:Label tabindex="-1" text="100" display-tooltip-when-elided="true" name="fps" style="color: rgb(255, 0, 0);" />
+            </ui:GroupBox>
+            <ui:GroupBox style="flex-direction: row; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; background-color: rgba(0, 0, 0, 0.38); font-size: 14px;">
+                <ui:Label tabindex="-1" text="CPU Coll Time Per Frame" display-tooltip-when-elided="true" style="color: rgb(255, 255, 255);" />
+                <ui:Label tabindex="-1" text="100" display-tooltip-when-elided="true" name="cpuTime" style="color: rgb(255, 0, 0);" />
+            </ui:GroupBox>
+            <ui:GroupBox style="flex-direction: row; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; background-color: rgba(0, 0, 0, 0.38); font-size: 14px;">
+                <ui:Label tabindex="-1" text="GPU Coll Time per Frame" display-tooltip-when-elided="true" style="color: rgb(255, 255, 255);" />
+                <ui:Label tabindex="-1" text="100" display-tooltip-when-elided="true" name="gpuTime" style="color: rgb(255, 0, 0);" />
+            </ui:GroupBox>
+        </ui:GroupBox>
+    </ui:GroupBox>
+</ui:UXML>
