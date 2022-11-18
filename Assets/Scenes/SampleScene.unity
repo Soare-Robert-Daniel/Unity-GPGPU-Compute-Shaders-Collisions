@@ -529,13 +529,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106882902}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6ad5445c8c6e89143b152e13ef0ab245, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   uiHandler: {fileID: 1775164331}
-  canRun: 0
+  canRun: 1
   gravityForce: 1
   gravityDirection: {x: 0, y: -1, z: 0}
   cubes: []
@@ -586,7 +586,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106882902}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a51969c4be6217649a084416a3fda555, type: 3}
   m_Name: 
@@ -598,6 +598,7 @@ MonoBehaviour:
   cubes: []
   cubesCanMove: 
   collisionShader: {fileID: 7200000, guid: 8c9fb961623b4d929fe7daf6699c4787, type: 3}
+  dispatchSize: 0
 --- !u!1 &1775164328
 GameObject:
   m_ObjectHideFlags: 0
