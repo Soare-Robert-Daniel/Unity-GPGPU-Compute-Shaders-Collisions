@@ -10,7 +10,7 @@ struct AABBdata
 
 StructuredBuffer<AABBdata> boxes;
 
-RWStructuredBuffer<int> can_move_boxes;
+RWStructuredBuffer<bool> can_move_boxes;
 
 int num_boxes;
 int num_per_group;
@@ -28,17 +28,16 @@ bool intersect(AABBdata a, AABBdata b)
             a.max.z >= b.min.z;
 }
 
-[numthreads(32, 1, 1)]
+[numthreads(64, 1, 1)]
 void main(uint3 id: SV_DispatchThreadID)
 {
-    if( (int)id.x + num_per_group > num_boxes )
+    if( (int)id.x > num_boxes )
     {
         return;
     }
 
-    for(int i = 0; i < num_per_group; ++i)
-    {
-        const int current_box = id.x + i;
+    
+        const int current_box = id.x;
         AABBdata box = boxes[current_box];
         box.max += displacement;
         box.min += displacement;
@@ -47,8 +46,8 @@ void main(uint3 id: SV_DispatchThreadID)
         {
             if( other != current_box )
             {
-                can_move_boxes[current_box] = intersect(box, boxes[other]);
+                can_move_boxes[current_box] = intersect(box, boxes[other]) ? false : true;
             }
         }
-    }
+    
 }

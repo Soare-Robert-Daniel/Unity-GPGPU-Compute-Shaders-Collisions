@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -529,7 +529,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106882902}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6ad5445c8c6e89143b152e13ef0ab245, type: 3}
   m_Name: 
@@ -570,13 +570,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cpuCollision: {fileID: 1106882903}
   gpuCollisions: {fileID: 1106882906}
-  rows: 50
-  columns: 50
+  rows: 2
+  columns: 2
   height: 30
   offsetRow: {x: 2, y: 0, z: 0}
   offsetColumn: {x: 0, y: 0, z: 2}
   offsetHeight: {x: 0, y: 2, z: 0}
-  cubesNumber: 4096
+  cubesNumber: 100
   cubeTemplate: {fileID: 8440513633421467054, guid: e7d3200e1c412eb49932e154bd3faa77,
     type: 3}
 --- !u!114 &1106882906
@@ -586,7 +586,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106882902}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a51969c4be6217649a084416a3fda555, type: 3}
   m_Name: 
@@ -599,6 +599,7 @@ MonoBehaviour:
   cubesCanMove: 
   collisionShader: {fileID: 7200000, guid: 8c9fb961623b4d929fe7daf6699c4787, type: 3}
   dispatchSize: 0
+  threadGroupSize: 0
 --- !u!1 &1775164328
 GameObject:
   m_ObjectHideFlags: 0

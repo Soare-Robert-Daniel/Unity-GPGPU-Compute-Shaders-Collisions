@@ -54,7 +54,7 @@ public class Spawner : MonoBehaviour
         if (gpuCollisions.isActiveAndEnabled)
         {
             gpuCollisions.UpdateObjects();
-            // gpuCollisions.canRun = true;
+            gpuCollisions.canRun = true;
         }
     }
 }

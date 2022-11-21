@@ -41,7 +41,7 @@ public class CPUCollision : MonoBehaviour
       _stopwatch.Start();
       for (var i = 0; i < cubes.Length; i++)
       {
-         cubesCanMove[i] = cubes[i].transform.position.y >= 0 && CanMove(i, displacementByGravity);
+         cubesCanMove[i] = cubes[i].transform.position.y >= -2.0f && CanMove(i, displacementByGravity);
       }
       _stopwatch.Stop();
       

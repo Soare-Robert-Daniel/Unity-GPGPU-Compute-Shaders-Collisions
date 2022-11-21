@@ -4,8 +4,9 @@ using System.Collections.Generic;
  using System.Diagnostics;
  using System.Linq;
  using UnityEngine;
+ using Debug = UnityEngine.Debug;
 
-public class GPUCollisions : MonoBehaviour
+ public class GPUCollisions : MonoBehaviour
 {
     public UIHandler uiHandler;
     public bool canRun;
@@ -26,6 +27,7 @@ public class GPUCollisions : MonoBehaviour
 
     private int kernelId;
     [SerializeField] private int dispatchSize;
+    [SerializeField] private uint threadGroupSize;
     
 
     private void Start()
@@ -54,7 +56,9 @@ public class GPUCollisions : MonoBehaviour
           _stopwatch.Start();
           
           boxes.SetData(cubesAABB);
-          canMove.SetData(cubesCanMove);
+          // canMove.SetData(cubesCanMove);
+          collisionShader.SetInt("num_boxes", cubesAABB.Length);
+          collisionShader.SetInt("num_per_group", (int)threadGroupSize);
           collisionShader.SetFloats("displacement", displacement);
           
           collisionShader.Dispatch(kernelId, dispatchSize, 1, 1);
@@ -72,14 +76,15 @@ public class GPUCollisions : MonoBehaviour
              }
           }
           
-          for (var i = 0; i < cubesCanMove.Length; i++)
-          {
-             cubesCanMove[i] = 0;
-          }
+          // for (var i = 0; i < cubesCanMove.Length; i++)
+          // {
+          //    cubesCanMove[i] = 0;
+          // }
        }
     
        public void UpdateObjects()
        {
+          Debug.Log("Update Object");
           cubes = GameObject.FindGameObjectsWithTag("Cube");
           
           cubesAABB = cubes
@@ -109,7 +114,7 @@ public class GPUCollisions : MonoBehaviour
 
           kernelId = collisionShader.FindKernel("main");
           
-          collisionShader.GetKernelThreadGroupSizes(kernelId, out uint threadGroupSize, out _, out _);
+          collisionShader.GetKernelThreadGroupSizes(kernelId, out threadGroupSize, out _, out _);
           dispatchSize = Mathf.CeilToInt((float)cubesAABB.Length / threadGroupSize);
           
           collisionShader.SetBuffer(kernelId,"boxes", boxes);
