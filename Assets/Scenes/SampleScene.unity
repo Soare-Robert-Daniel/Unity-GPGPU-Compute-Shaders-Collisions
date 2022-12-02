@@ -529,7 +529,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106882902}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6ad5445c8c6e89143b152e13ef0ab245, type: 3}
   m_Name: 
@@ -541,6 +541,10 @@ MonoBehaviour:
   cubes: []
   cubesAABB: []
   cubesCanMove: 
+  modelTypes: 
+  sphereModels: []
+  spheres: []
+  movementDirection: []
 --- !u!4 &1106882904
 Transform:
   m_ObjectHideFlags: 0
@@ -549,7 +553,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106882902}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.1979332, y: -0.17095327, z: 0.26427522}
+  m_LocalPosition: {x: -0.1979332, y: 3.1, z: 0.26427522}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -570,14 +574,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cpuCollision: {fileID: 1106882903}
   gpuCollisions: {fileID: 1106882906}
-  rows: 2
-  columns: 2
-  height: 30
+  rows: 1
+  columns: 1
+  height: 10
   offsetRow: {x: 2, y: 0, z: 0}
   offsetColumn: {x: 0, y: 0, z: 2}
   offsetHeight: {x: 0, y: 2, z: 0}
-  cubesNumber: 100
+  cubesNumber: 0
   cubeTemplate: {fileID: 8440513633421467054, guid: e7d3200e1c412eb49932e154bd3faa77,
+    type: 3}
+  spheresNumber: 5
+  spheresTemplate: {fileID: 8413638373159485784, guid: 55f69da2b7f2a438c9a3df14956f3172,
     type: 3}
 --- !u!114 &1106882906
 MonoBehaviour:
@@ -586,7 +593,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106882902}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a51969c4be6217649a084416a3fda555, type: 3}
   m_Name: 
