@@ -72,7 +72,7 @@ public class Spawner : MonoBehaviour
 
         if (cpuCollision.isActiveAndEnabled)
         {
-            cpuCollision.UpdateObjects();
+            cpuCollision.InitObjects();
             cpuCollision.canRun = true;
         }
 

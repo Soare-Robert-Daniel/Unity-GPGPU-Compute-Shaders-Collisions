@@ -6,8 +6,7 @@ namespace DataModels
     public enum ModelType
     {
         Sphere = 1,
-        Cube,
-        Cylinder
+        Triangle
     }
     [Serializable]
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -16,4 +15,15 @@ namespace DataModels
         public float radius;
         public Vector3 center;
     }
+    
+    [Serializable]
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public struct TriangleModel
+    {
+        public float verticesNum;
+        public float indicesNum;
+        public Vector3[] vertices;
+        public int[] indices;
+    }
+    
 }
