@@ -106,6 +106,19 @@ public class CPUCollision : MonoBehaviour
                     {
                         movementDirection[i] = Vector3.zero;
                         Debug.Log(string.Join(" - ", collision));
+                        
+                        var vertices = triangleModels[i - sphereModels.Length].vertices;
+                        var indices = triangleModels[i - sphereModels.Length].indices;
+                        foreach (var triangle in collision)
+                        {
+                            var tri = new []
+                                {vertices[indices[triangle]], vertices[indices[triangle + 1]],vertices[indices[triangle + 2]]};
+                            var AB = tri[1] - tri[0];
+                            var AC = tri[2] - tri[0];
+                            var N = Vector3.Cross(AB, AC).normalized;
+                            movementDirection[i] += N;
+                            movementDirection[i].Normalize();
+                        }
                     }
                     
                 }
