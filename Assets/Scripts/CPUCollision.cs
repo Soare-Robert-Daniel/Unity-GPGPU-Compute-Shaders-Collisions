@@ -5,19 +5,17 @@ using System.Diagnostics;
 using System.Linq;
 using DataModels;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 
 public class CPUCollision : MonoBehaviour
 {
     public UIHandler uiHandler;
     public bool canRun;
-    public float gravityForce;
+    public bool addGravity;
+    public float gravityAcceleration;
     public Vector3 gravityDirection;
-
-    [SerializeField] private GameObject[] cubes;
-    [SerializeField] private AABBdata[] cubesAABB;
-    [SerializeField] private bool[] cubesCanMove;
-
+    
     [SerializeField] private ModelType[] modelTypes;
 
     [SerializeField] private SphereModel[] sphereModels;
@@ -27,7 +25,8 @@ public class CPUCollision : MonoBehaviour
     [SerializeField] private GameObject[] trianglesGameObjects;
     [SerializeField] private Mesh[] triangleMeshes;
 
-    [SerializeField] private Vector3[] movementDirection;
+    [SerializeField] private ObjectData[] objectsInfo;
+    [SerializeField] private Vector3[] movementForces;
 
     private Vector3 _gravity;
 
@@ -35,7 +34,7 @@ public class CPUCollision : MonoBehaviour
 
     private void Start()
     {
-        _gravity = gravityForce * gravityDirection;
+        _gravity = gravityAcceleration * gravityDirection;
         canRun = false;
         _stopwatch = new Stopwatch();
         gravityDirection = gravityDirection.normalized;
@@ -48,34 +47,50 @@ public class CPUCollision : MonoBehaviour
         {
             return;
         }
-
-        UpdateAABB();
+        
         UpdateSphereModels();
         UpdateTriangleModels();
-        ResetMovement();
+        // ResetMovement();
 
-        var displacementByGravity = gravityDirection * (gravityForce * Time.deltaTime);
+        var displacementByGravity = gravityDirection * (gravityAcceleration * Time.deltaTime);
 
         _stopwatch.Reset();
         _stopwatch.Start();
 
         for (var i = 0; i < modelTypes.Length; i++)
         {
-            if (i < sphereModels.Length)
+            if (modelTypes[i] == ModelType.Sphere)
             {
                 if (sphereModels[i].center.y - sphereModels[i].radius <= 0)
                 {
-                    continue;
-                }
-            } else if (modelTypes[i] == ModelType.Triangle)
-            {
-                if (trianglesGameObjects[i + spheresGameObjects.Length].transform.position.y - 0.5f <= 0)
-                {
+                    objectsInfo[i].velocity = Vector3.zero;
                     continue;
                 }
             }
+            else if (modelTypes[i] == ModelType.Triangle)
+            {
+                if (trianglesGameObjects[tLocation(i)].transform.position.y - 0.5f <= 0)
+                {
+                    objectsInfo[i].velocity = Vector3.zero;
+                    continue;
+                }
+            }
+            
+            var forces = Vector3.zero;
+            var rotation = Vector3.zero;
+            
+            if ( addGravity )
+            {
+                forces += _gravity * objectsInfo[i].mass;
+                if (i > sphereModels.Length)
+                {
+                    var x = Vector3.Cross(-trianglesGameObjects[tLocation(i)].transform.up, gravityDirection);
+                    float theta = Mathf.Asin(x.magnitude);
+                    rotation += theta * x ;
+                }
+            }
 
-            movementDirection[i] = gravityDirection;
+            var collCount = 0;
 
             for (var j = 0; j < modelTypes.Length; j++)
             {
@@ -91,76 +106,150 @@ public class CPUCollision : MonoBehaviour
                     {
                         Debug.Log($"{i} collide with {j}");
                         // movementDirection[i] = Vector3.zero;
-                        movementDirection[i] +=
-                            ModelsCollision.NormalCollisionSphereToSphere(sphereModels[i], sphereModels[j]);
-                        // Debug.Log(ModelsCollision.NormalCollisionSphereToSphere(sphereModels[i], sphereModels[j], gravityDirection));
-                        movementDirection[i].Normalize();
+                        // movementDirection[i] +=
+                        //     ModelsCollision.NormalCollisionSphereToSphere(sphereModels[i], sphereModels[j]);
+                        // // Debug.Log(ModelsCollision.NormalCollisionSphereToSphere(sphereModels[i], sphereModels[j], gravityDirection));
+                        // movementDirection[i].Normalize();
+
+                        var collisions = ModelsCollision.GetSphereToSphereCollision(sphereModels[i], sphereModels[j]);
+                        
+                        for (var c = 0; c < collisions.normals.Length; c++)
+                        {
+                            // forces = (forces + forces.magnitude * collisions.depths[c] * collisions.normals[c]  );
+                            forces += collisions.normals[c] * (collisions.depths[c] + forces.magnitude);
+                            collCount += 1;
+                        }
+                        
                     }
                 }
                 else if (modelTypes[i] == ModelType.Triangle && modelTypes[j] == ModelType.Triangle)
                 {
-                    var collision =
+                    var collisions =
                         ModelsCollision.HasCollisionTriangleToTriangleOnTriangles(
-                            triangleModels[i - sphereModels.Length], triangleModels[j - sphereModels.Length]);
+                            triangleModels[tLocation(i)], triangleModels[tLocation(j)]);
+                    for (var c = 0; c < collisions.normals.Length; c++)
+                    {
+                        // forces = (forces + forces.magnitude * collisions.depths[c] * collisions.normals[c]  );
+                        var tmp = forces;
+                        forces += collisions.normals[c] * (collisions.depths[c] + forces.magnitude);
+
+                        var x = Vector3.Cross(collisions.normals[c], forces.normalized);
+                        float theta = Mathf.Asin(x.magnitude);
+                        rotation += theta * x ;
+                        
+                        collCount += 1;
+                    }
+                    // if (collision.no.Count > 0)
+                    // {
+                    //     // Debug.Log(string.Join(" - ", collision));
+                    //
+                    //     var vertices = triangleModels[tLocation(i)].vertices;
+                    //     var indices = triangleModels[tLocation(i)].indices;
+                    //     foreach (var triangle in collision)
+                    //     {
+                    //         var tri = new[]
+                    //         {
+                    //             vertices[indices[triangle]], vertices[indices[triangle + 1]],
+                    //             vertices[indices[triangle + 2]]
+                    //         };
+                    //         var AB = tri[1] - tri[0];
+                    //         var AC = tri[2] - tri[0];
+                    //         var N = Vector3.Cross(AB, AC).normalized;
+                    //         movementForces[i] += N;
+                    //         movementForces[i].Normalize();
+                    //     }
+                    // }
+                }
+                else if (modelTypes[i] == ModelType.Triangle && modelTypes[j] == ModelType.Sphere)
+                {
+                    var collision =
+                        ModelsCollision.HasCollisionTriangleToSphere(
+                            triangleModels[tLocation(i)], sphereModels[j]);
                     if (collision.Count > 0)
                     {
-                        movementDirection[i] = Vector3.zero;
-                        Debug.Log(string.Join(" - ", collision));
-                        
-                        var vertices = triangleModels[i - sphereModels.Length].vertices;
-                        var indices = triangleModels[i - sphereModels.Length].indices;
+                        // Debug.Log(string.Join(" |-| ", collision));
+
+                        var vertices = triangleModels[tLocation(i)].vertices;
+                        var indices = triangleModels[tLocation(i)].indices;
                         foreach (var triangle in collision)
                         {
-                            var tri = new []
-                                {vertices[indices[triangle]], vertices[indices[triangle + 1]],vertices[indices[triangle + 2]]};
+                            var tri = new[]
+                            {
+                                vertices[indices[triangle]], vertices[indices[triangle + 1]],
+                                vertices[indices[triangle + 2]]
+                            };
                             var AB = tri[1] - tri[0];
                             var AC = tri[2] - tri[0];
                             var N = Vector3.Cross(AB, AC).normalized;
-                            movementDirection[i] += N;
-                            movementDirection[i].Normalize();
+                            movementForces[i] += N;
+                            movementForces[i].Normalize();
                         }
                     }
-                    
+                } else if (modelTypes[i] == ModelType.Sphere && modelTypes[j] == ModelType.Triangle)
+                {
+                    var collision =
+                        ModelsCollision.HasCollisionTriangleToSphere(
+                            triangleModels[tLocation(j)], sphereModels[i]);
+                    if (collision.Count > 0)
+                    {
+                        // Debug.Log(string.Join(" |-| ", collision));
+                        // Debug.Log($"{i} with {j}");
+
+                        var vertices = triangleModels[tLocation(j)].vertices;
+                        var indices = triangleModels[tLocation(j)].indices;
+                        foreach (var triangle in collision)
+                        {
+                            var tri = new[]
+                            {
+                                vertices[indices[triangle]], vertices[indices[triangle + 1]],
+                                vertices[indices[triangle + 2]]
+                            };
+                            var AB = tri[1] - tri[0];
+                            var AC = tri[2] - tri[0];
+                            var N = Vector3.Cross(AB, AC).normalized;
+                            movementForces[i] -= N;
+                            movementForces[i].Normalize();
+                        }
+                    }
                 }
             }
 
-            movementDirection[i] *= Time.deltaTime;
+            objectsInfo[i].velocity *= 0.6f;
+            objectsInfo[i].rotationVelocity *= 0.1f;
+            
+            objectsInfo[i].velocity += forces * Time.deltaTime;
+            objectsInfo[i].rotationVelocity += rotation * Time.deltaTime;
+            // if (collCount > 0)
+            // {
+            //     objectsInfo[i].velocity *= collCount;
+            // }
+            
+            
         }
 
         _stopwatch.Stop();
 
         uiHandler.UpdateCPUTime(_stopwatch.Elapsed);
-
-        for (var i = 0; i < cubes.Length; i++)
-        {
-            if (cubesCanMove[i])
-            {
-                cubes[i].transform.Translate(displacementByGravity);
-            }
-        }
-
+        
         for (var i = 0; i < spheresGameObjects.Length; i++)
         {
-            spheresGameObjects[i].transform.Translate(movementDirection[i]);
+            spheresGameObjects[i].transform.Translate(objectsInfo[i].velocity);
         }
-        
+
         for (var i = 0; i < trianglesGameObjects.Length; i++)
         {
-            trianglesGameObjects[i].transform.Translate(movementDirection[i + spheresGameObjects.Length ]);
+            trianglesGameObjects[i].transform.Translate(objectsInfo[tLocation(i)].velocity);
+            trianglesGameObjects[i].transform.Rotate(objectsInfo[tLocation(i)].rotationVelocity.normalized, Mathf.Rad2Deg * objectsInfo[tLocation(i)].rotationVelocity.magnitude );
         }
+    }
+
+    private int tLocation(int i)
+    {
+        return i - sphereModels.Length;
     }
 
     public void InitObjects()
     {
-        cubes = GameObject.FindGameObjectsWithTag("Cube");
-
-        cubesAABB = cubes
-            .Select(c => c.GetComponent<MeshFilter>().mesh)
-            .Select(m => new AABBdata {localMax = m.bounds.max, localMin = m.bounds.min})
-            .ToArray();
-
-        cubesCanMove = new bool[cubesAABB.Length];
-
         spheresGameObjects = GameObject.FindGameObjectsWithTag("Sphere");
         trianglesGameObjects = GameObject.FindGameObjectsWithTag("Triangles");
 
@@ -170,7 +259,14 @@ public class CPUCollision : MonoBehaviour
         triangleModels = new TriangleModel[trianglesGameObjects.Length];
         triangleMeshes = new Mesh[trianglesGameObjects.Length];
 
-        movementDirection = new Vector3[spheresGameObjects.Length + trianglesGameObjects.Length];
+        movementForces = new Vector3[spheresGameObjects.Length + trianglesGameObjects.Length];
+        objectsInfo = new ObjectData[spheresGameObjects.Length + trianglesGameObjects.Length];
+        
+        for (var i = 0; i < objectsInfo.Length; i++)
+        {
+            objectsInfo[i].mass = 1.0f;
+            objectsInfo[i].velocity = Vector3.zero;
+        }
 
         for (var i = 0; i < spheresGameObjects.Length; i++)
         {
@@ -196,14 +292,14 @@ public class CPUCollision : MonoBehaviour
             };
         }
 
-        ResetMovement();
+        ResetForces();
     }
-
-    private void ResetMovement()
+    
+    private void ResetForces()
     {
-        for (var i = 0; i < movementDirection.Length; i++)
+        for (var i = 0; i < movementForces.Length; i++)
         {
-            movementDirection[i] = Vector3.zero;
+            movementForces[i] = Vector3.zero;
         }
     }
 
@@ -225,29 +321,6 @@ public class CPUCollision : MonoBehaviour
                     trianglesGameObjects[i].transform.TransformPoint(triangleMeshes[i].vertices[j]);
             }
         }
-    }
-
-    private void UpdateAABB()
-    {
-        for (var i = 0; i < cubes.Length; i++)
-        {
-            cubesAABB[i].max = cubes[i].transform.InverseTransformPoint(cubesAABB[i].localMax);
-            cubesAABB[i].min = cubes[i].transform.InverseTransformPoint(cubesAABB[i].localMin);
-        }
-    }
-
-    private bool CanMove(int id, Vector3 displacement)
-    {
-        var box = new AABBdata {min = cubesAABB[id].min + displacement, max = cubesAABB[id].max + displacement};
-        for (var i = 0; i < cubes.Length; i++)
-        {
-            if (i != id && Intersect(box, cubesAABB[i]))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private static bool Intersect(AABBdata a, AABBdata b)

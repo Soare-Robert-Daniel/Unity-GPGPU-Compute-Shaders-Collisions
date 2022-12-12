@@ -53,7 +53,7 @@ public class Spawner : MonoBehaviour
                         Instantiate(
                             cubeTemplate, 
                             posOrigin + r * offsetRow + c * offsetColumn + h * offsetHeight + randomXZ, 
-                            Quaternion.identity
+                            new Quaternion(randomXZ.x, randomXZ.y, 0, 1)
                         );
                     } 
                     else if (k < cubesNumber + spheresNumber)
