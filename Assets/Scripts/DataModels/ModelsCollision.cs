@@ -318,9 +318,10 @@ namespace DataModels
             return GetClosest(p, pAB, pBC, pCA);
         }
 
-        public static List<int> HasCollisionTriangleToSphere(TriangleModel a, SphereModel b)
+        public static CollisionData HasCollisionTriangleToSphere(TriangleModel a, SphereModel b)
         {
             var collisionOnTriangles = new List<int>();
+            var collisionDepth = new List<float>();
 
             for (var i = 0; i < a.indicesNum - 1; i += 3)
             {
@@ -329,10 +330,34 @@ namespace DataModels
                 if ((closesPoint - b.center).sqrMagnitude <= b.radius * b.radius)
                 {
                     collisionOnTriangles.Add(i / 3);
+                    collisionDepth.Add(b.radius - (closesPoint - b.center).magnitude);
                 }
             }
 
-            return collisionOnTriangles;
+            var data = new CollisionData(collisionOnTriangles.Count);
+            
+            var index = 0;
+            foreach (var triangle in collisionOnTriangles)
+            {
+                var tri = new[]
+                    {a.vertices[a.indices[triangle]], a.vertices[a.indices[triangle + 1]], a.vertices[a.indices[triangle + 2]]};
+                var AB = tri[1] - tri[0];
+                var AC = tri[2] - tri[0];
+                var N = Vector3.Cross(AB, AC).normalized;
+                data.normals[index] = N;
+                data.depths[index] = collisionDepth[index];
+                data.points[index] = (tri[0] + tri[1] + tri[2]) / 3;
+                index += 1;
+            }
+
+            return data;
+        }
+
+        public static bool IsPointInAABB(Vector3 point, AABBModel cage)
+        {
+            return cage.min.x <= point.x && point.x <= cage.max.x &&
+                   cage.min.y <= point.y && point.y <= cage.max.y &&
+                   cage.min.z <= point.z && point.z <= cage.max.z;
         }
     }
 }

@@ -20,10 +20,19 @@ namespace DataModels
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct TriangleModel
     {
+        public Vector3 center;
         public float verticesNum;
         public float indicesNum;
         public Vector3[] vertices;
         public int[] indices;
+    }
+    
+    [Serializable]
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public struct AABBModel
+    {
+        public Vector3 max;
+        public Vector3 min;
     }
     
 }
