@@ -11,7 +11,7 @@ namespace DataModels
     {
         public float mass;
         public Vector3 velocity;
-        public Vector3 rotationVelocity;
+        public Vector3 position;
     }
     
     [Serializable]
@@ -225,6 +225,47 @@ namespace DataModels
 
             return data;
         }
+        
+        public static CollisionData NativeHasCollisionTriangleToTriangleOnTriangles(NativeTriangleModel a, NativeTriangleModel b)
+        {
+            var collisionOnTriangles = new List<int>();
+
+            for (var i = 0; i < a.indicesNum - 1; i += 3)
+            {
+                var tri1 = new[]
+                    {a.vertices[a.indices[i]], a.vertices[a.indices[i + 1]], a.vertices[a.indices[i + 2]]};
+                for (var j = 0; j < b.indicesNum - 1; j += 3)
+                {
+                    var tri2 = new[]
+                        {b.vertices[b.indices[j]], b.vertices[b.indices[j + 1]], b.vertices[b.indices[j + 2]]};
+
+                    if (TriangleTriangleIntersection(tri1, tri2))
+                    {
+                        collisionOnTriangles.Add(i / 3);
+                        // Debug.Log($"Tri 1: {string.Join("-", tri1)} | Tri 2: {string.Join("-", tri2)}");
+                        break;
+                    }
+                }
+            }
+
+            var data = new CollisionData(collisionOnTriangles.Count);
+            
+            var index = 0;
+            foreach (var triangle in collisionOnTriangles)
+            {
+                var tri = new[]
+                    {a.vertices[a.indices[triangle]], a.vertices[a.indices[triangle + 1]], a.vertices[a.indices[triangle + 2]]};
+                var AB = tri[1] - tri[0];
+                var AC = tri[2] - tri[0];
+                var N = Vector3.Cross(AB, AC).normalized;
+                data.normals[index] = N;
+                data.depths[index] = 0.1f;
+                data.points[index] = (tri[0] + tri[1] + tri[2]) / 3;
+                index += 1;
+            }
+
+            return data;
+        }
 
         private static Vector3 GetClosest(Vector3 p, Vector3 a, Vector3 b, Vector3 c)
         {
@@ -306,6 +347,41 @@ namespace DataModels
         }
 
         public static CollisionData HasCollisionTriangleToSphere(TriangleModel a, SphereModel b)
+        {
+            var collisionOnTriangles = new List<int>();
+            var collisionDepth = new List<float>();
+
+            for (var i = 0; i < a.indicesNum - 1; i += 3)
+            {
+                var closesPoint = TrianglePointIntersection(a.vertices[a.indices[i]], a.vertices[a.indices[i + 1]],
+                    a.vertices[a.indices[i + 2]], b.center);
+                if ((closesPoint - b.center).sqrMagnitude <= b.radius * b.radius)
+                {
+                    collisionOnTriangles.Add(i / 3);
+                    collisionDepth.Add(b.radius - (closesPoint - b.center).magnitude);
+                }
+            }
+
+            var data = new CollisionData(collisionOnTriangles.Count);
+            
+            var index = 0;
+            foreach (var triangle in collisionOnTriangles)
+            {
+                var tri = new[]
+                    {a.vertices[a.indices[triangle]], a.vertices[a.indices[triangle + 1]], a.vertices[a.indices[triangle + 2]]};
+                var AB = tri[1] - tri[0];
+                var AC = tri[2] - tri[0];
+                var N = Vector3.Cross(AB, AC).normalized;
+                data.normals[index] = N;
+                data.depths[index] = collisionDepth[index];
+                data.points[index] = (tri[0] + tri[1] + tri[2]) / 3;
+                index += 1;
+            }
+
+            return data;
+        }
+        
+        public static CollisionData NativeHasCollisionTriangleToSphere(NativeTriangleModel a, SphereModel b)
         {
             var collisionOnTriangles = new List<int>();
             var collisionDepth = new List<float>();
