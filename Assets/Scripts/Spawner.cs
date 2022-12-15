@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class Spawner : MonoBehaviour
@@ -25,7 +26,11 @@ public class Spawner : MonoBehaviour
     
     [Header("Spheres")]
     public int spheresNumber;
-    [SerializeField] private GameObject spheresTemplate;
+    [SerializeField] private GameObject sphereTemplate;
+    
+    [Header("Cylinders")]
+    public int cylindersNumber;
+    [SerializeField] private GameObject cylinderTemplate;
 
     private void Start()
     {
@@ -53,7 +58,7 @@ public class Spawner : MonoBehaviour
                         Instantiate(
                             cubeTemplate, 
                             posOrigin + r * offsetRow + c * offsetColumn + h * offsetHeight + randomXZ, 
-                            Quaternion.identity// new Quaternion(randomXZ.x, randomXZ.y, 0, 1)
+                            new Quaternion(randomXZ.x, randomXZ.y, 0, 1)
                         );
                     } 
                     else if (k < cubesNumber + spheresNumber)
@@ -61,9 +66,19 @@ public class Spawner : MonoBehaviour
                         k++;
 
                         Instantiate(
-                            spheresTemplate, 
+                            sphereTemplate, 
                             posOrigin + r * offsetRow + c * offsetColumn + h * offsetHeight + randomXZ, 
                             Quaternion.identity
+                        );
+                    }
+                    else if (k < cubesNumber + spheresNumber + cylindersNumber)
+                    {
+                        k++;
+
+                        Instantiate(
+                            cylinderTemplate, 
+                            posOrigin + r * offsetRow + c * offsetColumn + h * offsetHeight + randomXZ, 
+                            new Quaternion(randomXZ.x, randomXZ.y, 0, 1)
                         );
                     }
                 }

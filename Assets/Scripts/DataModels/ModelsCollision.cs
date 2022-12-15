@@ -36,19 +36,6 @@ namespace DataModels
     }
     public static class ModelsCollision
     {
-        public static bool HasCollisionSphereToSphere(SphereModel a, SphereModel b)
-        {
-            return Vector3.Distance(a.center, b.center) < (a.radius + b.radius);
-        }
-
-        public static Vector3 NormalCollisionSphereToSphere(SphereModel a, SphereModel b)
-        {
-            var collNormal = (a.center - b.center).normalized;
-            // var angleDeg = Vector3.Angle(moveDirection, collNormal);
-
-            return collNormal; // Mathf.Abs(angleDeg) >= 90 ? moveDirection : (collNormal).normalized;
-        }
-
         public static CollisionData GetSphereToSphereCollision(SphereModel a, SphereModel b)
         {
             var data = new CollisionData(1);
@@ -57,8 +44,8 @@ namespace DataModels
             if (distance < a.radius + b.radius)
             {
                 data.normals[0] = (a.center - b.center).normalized;
-                data.depths[0] = (a.radius + b.radius) - distance;
-                data.points[0] = a.center + data.normals[0] * data.depths[0];
+                data.depths[0] = Mathf.Abs(a.radius + b.radius - distance);
+                data.points[0] = a.center - data.normals[0] * data.depths[0];
             }
 
             return data;
