@@ -21,14 +21,14 @@ public class CPUCollision : MonoBehaviour
     private TriangleModel cageModel;
     private AABBModel cageAABB;
     
-    [SerializeField] private ModelType[] modelTypes;
+    private ModelType[] modelTypes;
 
-    [SerializeField] private SphereModel[] sphereModels;
-    [SerializeField] private GameObject[] spheresGameObjects;
+    private SphereModel[] sphereModels;
+    private GameObject[] spheresGameObjects;
 
-    [SerializeField] private TriangleModel[] triangleModels;
-    [SerializeField] private GameObject[] trianglesGameObjects;
-    [SerializeField] private Mesh[] triangleMeshes;
+    private TriangleModel[] triangleModels;
+    private GameObject[] trianglesGameObjects;
+    private Mesh[] triangleMeshes;
 
     [SerializeField] private ObjectData[] objectsInfo;
     [SerializeField] private Vector3[] movementForces;
@@ -72,12 +72,6 @@ public class CPUCollision : MonoBehaviour
             if ( addGravity )
             {
                 forces += Gravity * objectsInfo[i].mass;
-                if (i > sphereModels.Length)
-                {
-                    var x = Vector3.Cross(-trianglesGameObjects[tLocation(i)].transform.up, gravityDirection);
-                    float theta = Mathf.Asin(x.magnitude);
-                    rotation += theta * x ;
-                }
             }
 
             
@@ -117,11 +111,6 @@ public class CPUCollision : MonoBehaviour
                         // forces = (forces + forces.magnitude * collisions.depths[c] * collisions.normals[c]  );
                         var tmp = forces;
                         forces += collisions.normals[c] * (collisions.depths[c] + forces.magnitude);
-
-                        var x = Vector3.Cross(collisions.normals[c], forces.normalized);
-                        float theta = Mathf.Asin(x.magnitude);
-                        rotation += theta * x ;
-                        
                         collCount += 1;
                     }
                 }
@@ -135,11 +124,6 @@ public class CPUCollision : MonoBehaviour
                         // forces = (forces + forces.magnitude * collisions.depths[c] * collisions.normals[c]  );
                         var tmp = forces;
                         forces += collisions.normals[c] * (collisions.depths[c] + forces.magnitude);
-
-                        var x = Vector3.Cross(collisions.normals[c], forces.normalized);
-                        float theta = Mathf.Asin(x.magnitude);
-                        rotation += theta * x ;
-                        
                         collCount += 1;
                     }
                 } else if (modelTypes[i] == ModelType.Sphere && modelTypes[j] == ModelType.Triangle)
@@ -154,11 +138,6 @@ public class CPUCollision : MonoBehaviour
                         // forces = (forces + forces.magnitude * collisions.depths[c] * collisions.normals[c]  );
                         var tmp = forces;
                         forces += collisions.normals[c] * (collisions.depths[c]);// + forces.magnitude);
-
-                        var x = Vector3.Cross(collisions.normals[c], forces.normalized);
-                        float theta = Mathf.Asin(x.magnitude);
-                        rotation += theta * x ;
-                        
                         collCount += 1;
                     }
                 }
@@ -166,10 +145,20 @@ public class CPUCollision : MonoBehaviour
             
             
 
+            var oldVelocity = objectsInfo[i].velocity;
             objectsInfo[i].velocity *= 0.6f;
+            objectsInfo[i].velocity += forces * Time.deltaTime;
+            
+            if (i > sphereModels.Length)
+            {
+                var x = Vector3.Cross(oldVelocity, objectsInfo[i].velocity);
+                float theta = Mathf.Asin(x.magnitude);
+                rotation = theta * x ;
+            }
+            
             objectsInfo[i].rotationVelocity *= 0.8f;
             
-            objectsInfo[i].velocity += forces * Time.deltaTime;
+            
             objectsInfo[i].rotationVelocity += rotation * Time.deltaTime;
             
             if (modelTypes[i] == ModelType.Sphere)
@@ -231,8 +220,8 @@ public class CPUCollision : MonoBehaviour
 
         for (var i = 0; i < trianglesGameObjects.Length; i++)
         {
-            trianglesGameObjects[i].transform.Translate(objectsInfo[i + sphereModels.Length].velocity);
-            trianglesGameObjects[i].transform.Rotate(objectsInfo[i + sphereModels.Length].rotationVelocity.normalized, Mathf.Rad2Deg * objectsInfo[i + sphereModels.Length].rotationVelocity.magnitude );
+            trianglesGameObjects[i].transform.LookAt(trianglesGameObjects[i].transform.position + objectsInfo[i + sphereModels.Length].velocity);
+            trianglesGameObjects[i].transform.position = (trianglesGameObjects[i].transform.position + objectsInfo[i + sphereModels.Length].velocity);
         }
     }
 

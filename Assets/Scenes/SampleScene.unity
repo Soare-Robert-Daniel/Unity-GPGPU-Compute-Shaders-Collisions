@@ -456,12 +456,6 @@ MonoBehaviour:
   gravityAcceleration: 1
   gravityDirection: {x: 0, y: -1, z: 0}
   cage: {fileID: 1192940115}
-  modelTypes: 
-  sphereModels: []
-  spheresGameObjects: []
-  triangleModels: []
-  trianglesGameObjects: []
-  triangleMeshes: []
   objectsInfo: []
   movementForces: []
 --- !u!4 &1106882904
@@ -493,8 +487,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cpuCollision: {fileID: 1106882903}
   gpuCollisions: {fileID: 1106882906}
-  rows: 5
-  columns: 5
+  rows: 1
+  columns: 1
   height: 40
   offsetRow: {x: 2.3, y: 0, z: 0}
   offsetColumn: {x: 0, y: 0, z: 2.3}
@@ -504,7 +498,7 @@ MonoBehaviour:
   cubesNumber: 50
   cubeTemplate: {fileID: 8440513633421467054, guid: e7d3200e1c412eb49932e154bd3faa77,
     type: 3}
-  spheresNumber: 50
+  spheresNumber: 0
   spheresTemplate: {fileID: 8413638373159485784, guid: 55f69da2b7f2a438c9a3df14956f3172,
     type: 3}
 --- !u!114 &1106882906
