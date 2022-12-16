@@ -11,7 +11,7 @@ namespace DataModels
     {
         public float mass;
         public Vector3 velocity;
-        public Vector3 rotationVelocity;
+        public Vector3 position;
     }
     
     [Serializable]

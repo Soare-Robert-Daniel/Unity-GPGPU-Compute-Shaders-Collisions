@@ -64,6 +64,17 @@ public class CPUCollision : MonoBehaviour
         _stopwatch.Reset();
         _stopwatch.Start();
 
+        #region Spatial Hashing
+
+        var spatialHash = new SpatialHash(1);
+
+        for (int i = 0; i < objectsInfo.Length; i++)
+        {
+            spatialHash.Insert(objectsInfo[i].position, i);
+        }
+
+        #endregion
+
         for (var i = 0; i < modelTypes.Length; i++)
         {
             var forces = Vector3.zero;
@@ -72,8 +83,10 @@ public class CPUCollision : MonoBehaviour
             {
                 forces += Gravity * objectsInfo[i].mass;
             }
+
+            var nearModels = spatialHash.Query(objectsInfo[i].position);
             
-            for (var j = 0; j < modelTypes.Length; j++)
+            foreach (int j in nearModels)
             {
                 if (i == j)
                 {
@@ -273,7 +286,9 @@ public class CPUCollision : MonoBehaviour
     {
         for (var i = 0; i < spheresGameObjects.Length; i++)
         {
-            sphereModels[i].center = spheresGameObjects[i].transform.position;
+            var pos = spheresGameObjects[i].transform.position;
+            sphereModels[i].center = pos;
+            objectsInfo[i].position = pos;
         }
     }
 
@@ -286,6 +301,7 @@ public class CPUCollision : MonoBehaviour
                 triangleModels[i].vertices[j] =
                     trianglesGameObjects[i].transform.TransformPoint(triangleMeshes[i].vertices[j]);
             }
+            objectsInfo[i + sphereModels.Length].position = trianglesGameObjects[i].transform.position;
         }
     }
 

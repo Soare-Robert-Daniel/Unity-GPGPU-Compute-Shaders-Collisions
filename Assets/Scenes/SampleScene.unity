@@ -455,7 +455,7 @@ MonoBehaviour:
   addGravity: 1
   gravityAcceleration: 1
   gravityDirection: {x: 0, y: -1, z: 0}
-  addRandomInitVelocity: 0
+  addRandomInitVelocity: 1
   cage: {fileID: 1192940115}
   objectsInfo: []
   movementForces: []
@@ -488,21 +488,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cpuCollision: {fileID: 1106882903}
   gpuCollisions: {fileID: 1106882906}
-  rows: 2
-  columns: 2
+  rows: 8
+  columns: 8
   height: 40
   offsetRow: {x: 2.3, y: 0, z: 0}
   offsetColumn: {x: 0, y: 0, z: 2.3}
   offsetHeight: {x: 0, y: 2.5, z: 0}
   random: 1
   randomRange: 1
-  cubesNumber: 0
+  cubesNumber: 250
   cubeTemplate: {fileID: 8440513633421467054, guid: e7d3200e1c412eb49932e154bd3faa77,
     type: 3}
-  spheresNumber: 0
+  spheresNumber: 100
   sphereTemplate: {fileID: 8413638373159485784, guid: 55f69da2b7f2a438c9a3df14956f3172,
     type: 3}
-  cylindersNumber: 100
+  cylindersNumber: 500
   cylinderTemplate: {fileID: 1710069674665357310, guid: 4604b362d9d3b4873a4082282054cbf5,
     type: 3}
 --- !u!114 &1106882906
