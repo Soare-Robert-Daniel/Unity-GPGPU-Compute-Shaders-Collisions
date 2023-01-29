@@ -58,15 +58,13 @@ public class CPUCollision : MonoBehaviour
         UpdateSphereModels();
         UpdateTriangleModels();
         // ResetMovement();
-
-        var displacementByGravity = gravityDirection * (gravityAcceleration * Time.deltaTime);
-
+        
         _stopwatch.Reset();
         _stopwatch.Start();
 
         #region Spatial Hashing
 
-        var spatialHash = new SpatialHash(1);
+        var spatialHash = new SpatialHash(2);
 
         for (int i = 0; i < objectsInfo.Length; i++)
         {

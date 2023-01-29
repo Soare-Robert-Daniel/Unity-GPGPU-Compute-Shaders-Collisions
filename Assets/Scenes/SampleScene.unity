@@ -452,7 +452,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiHandler: {fileID: 1775164331}
   canRun: 0
-  addGravity: 1
+  addGravity: 0
   gravityAcceleration: 1
   gravityDirection: {x: 0, y: -1, z: 0}
   addRandomInitVelocity: 1
@@ -467,7 +467,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106882902}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 5.25, z: 0}
+  m_LocalPosition: {x: -28.1, y: -13.3, z: -30.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -488,21 +488,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cpuCollision: {fileID: 1106882903}
   gpuCollisions: {fileID: 1106882906}
-  rows: 8
-  columns: 8
-  height: 40
-  offsetRow: {x: 2.3, y: 0, z: 0}
-  offsetColumn: {x: 0, y: 0, z: 2.3}
-  offsetHeight: {x: 0, y: 2.5, z: 0}
+  rows: 20
+  columns: 20
+  height: 10
+  offsetRow: {x: 3, y: 0, z: 0}
+  offsetColumn: {x: 0, y: 0, z: 3}
+  offsetHeight: {x: 0, y: 3, z: 0}
   random: 1
   randomRange: 1
   cubesNumber: 250
   cubeTemplate: {fileID: 8440513633421467054, guid: e7d3200e1c412eb49932e154bd3faa77,
     type: 3}
-  spheresNumber: 100
+  spheresNumber: 500
   sphereTemplate: {fileID: 8413638373159485784, guid: 55f69da2b7f2a438c9a3df14956f3172,
     type: 3}
-  cylindersNumber: 500
+  cylindersNumber: 1000
   cylinderTemplate: {fileID: 1710069674665357310, guid: 4604b362d9d3b4873a4082282054cbf5,
     type: 3}
 --- !u!114 &1106882906
@@ -625,7 +625,7 @@ Transform:
   m_GameObject: {fileID: 1192940115}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.05, y: 15.93, z: 0}
-  m_LocalScale: {x: 40, y: 40, z: 40}
+  m_LocalScale: {x: 70, y: 70, z: 70}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -710,17 +710,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 76f2aa2943bc643a4bf2de90cad14498,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 20
+      value: 38
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 76f2aa2943bc643a4bf2de90cad14498,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 20
+      value: 38
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 76f2aa2943bc643a4bf2de90cad14498,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 20
+      value: 38
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 76f2aa2943bc643a4bf2de90cad14498,
         type: 3}
@@ -735,7 +735,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 76f2aa2943bc643a4bf2de90cad14498,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0
+      value: -1e-15
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 76f2aa2943bc643a4bf2de90cad14498,
         type: 3}

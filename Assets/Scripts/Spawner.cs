@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
+using SysRandom = System.Random;
 
 public class Spawner : MonoBehaviour
 {
@@ -37,7 +38,22 @@ public class Spawner : MonoBehaviour
         var k = 0;
 
         var posOrigin = transform.position;
-  
+
+        var positions = new List<Vector3>();
+
+        for (var h = 0; h < height; ++h)
+        {
+            for (var c = 0; c < columns; ++c)
+            {
+                for (var r = 0; r < rows; ++r)
+                {
+                    positions.Add(posOrigin + r * offsetRow + c * offsetColumn + h * offsetHeight );
+                }
+            }
+        }
+
+        Shuffle(positions);
+
         for (var h = 0; h < height; ++h)
         {
             for (var c = 0; c < columns; ++c)
@@ -53,33 +69,39 @@ public class Spawner : MonoBehaviour
                     
                     if (k < cubesNumber)
                     {
-                        k++;
+                       
 
                         Instantiate(
                             cubeTemplate, 
-                            posOrigin + r * offsetRow + c * offsetColumn + h * offsetHeight + randomXZ, 
+                            positions[k], 
                             new Quaternion(randomXZ.x, randomXZ.y, 0, 1)
                         );
+                        
+                        k++;
                     } 
                     else if (k < cubesNumber + spheresNumber)
                     {
-                        k++;
+                        
 
                         Instantiate(
                             sphereTemplate, 
-                            posOrigin + r * offsetRow + c * offsetColumn + h * offsetHeight + randomXZ, 
+                            positions[k], 
                             Quaternion.identity
                         );
+                        
+                        k++;
                     }
                     else if (k < cubesNumber + spheresNumber + cylindersNumber)
                     {
-                        k++;
+                        
 
                         Instantiate(
                             cylinderTemplate, 
-                            posOrigin + r * offsetRow + c * offsetColumn + h * offsetHeight + randomXZ, 
+                            positions[k], 
                             new Quaternion(randomXZ.x, randomXZ.y, 0, 1)
                         );
+                        
+                        k++;
                     }
                 }
             }
@@ -88,7 +110,7 @@ public class Spawner : MonoBehaviour
         if (cpuCollision.isActiveAndEnabled)
         {
             cpuCollision.InitObjects();
-            cpuCollision.canRun = true;
+            // cpuCollision.canRun = true;
         }
 
         if (gpuCollisions.isActiveAndEnabled)
@@ -96,5 +118,16 @@ public class Spawner : MonoBehaviour
             gpuCollisions.UpdateObjects();
             gpuCollisions.canRun = true;
         }
+    }
+    
+    public static void Shuffle<T>(IList<T> list)  
+    {  
+        var rng = new SysRandom();
+        int n = list.Count;  
+        while (n > 1) {  
+            n--;  
+            int k = rng.Next(n + 1);  
+            (list[k], list[n]) = (list[n], list[k]);
+        }  
     }
 }
