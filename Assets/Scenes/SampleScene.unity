@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -252,6 +252,13 @@ MonoBehaviour:
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
+  m_TaaSettings:
+    quality: 3
+    frameInfluence: 0.1
+    jitterScale: 1
+    mipBias: 0
+    varianceClampScale: 0.9
+    contrastAdaptiveSharpening: 0
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -359,7 +366,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Version: 2
+  m_Version: 3
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_LightLayerMask: 1
@@ -369,7 +376,7 @@ MonoBehaviour:
   m_ShadowRenderingLayers: 1
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
-  m_SoftShadowQuality: 1
+  m_SoftShadowQuality: 2
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -429,8 +436,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1106882904}
   - component: {fileID: 1106882903}
-  - component: {fileID: 1106882906}
+  - component: {fileID: 1106882907}
   - component: {fileID: 1106882905}
+  - component: {fileID: 1106882906}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -445,7 +453,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106882902}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6ad5445c8c6e89143b152e13ef0ab245, type: 3}
   m_Name: 
@@ -457,6 +465,7 @@ MonoBehaviour:
   gravityDirection: {x: 0, y: -1, z: 0}
   addRandomInitVelocity: 1
   cage: {fileID: 1192940115}
+  triangleModels: []
   objectsInfo: []
   movementForces: []
 --- !u!4 &1106882904
@@ -487,7 +496,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cpuCollision: {fileID: 1106882903}
-  gpuCollisions: {fileID: 1106882906}
+  gpuCollisions: {fileID: 1106882907}
   rows: 20
   columns: 20
   height: 10
@@ -496,14 +505,14 @@ MonoBehaviour:
   offsetHeight: {x: 0, y: 3, z: 0}
   random: 1
   randomRange: 1
-  cubesNumber: 250
+  cubesNumber: 5
   cubeTemplate: {fileID: 8440513633421467054, guid: e7d3200e1c412eb49932e154bd3faa77,
     type: 3}
-  spheresNumber: 500
+  spheresNumber: 5
   sphereTemplate: {fileID: 8413638373159485784, guid: 55f69da2b7f2a438c9a3df14956f3172,
     type: 3}
-  cylindersNumber: 1000
-  cylinderTemplate: {fileID: 1710069674665357310, guid: 4604b362d9d3b4873a4082282054cbf5,
+  cylindersNumber: 5
+  cylinderTemplate: {fileID: 2372650318647434359, guid: 922de3a671a95ea4baee22605efebe77,
     type: 3}
 --- !u!114 &1106882906
 MonoBehaviour:
@@ -524,6 +533,30 @@ MonoBehaviour:
   cubes: []
   cubesCanMove: 
   collisionShader: {fileID: 7200000, guid: 8c9fb961623b4d929fe7daf6699c4787, type: 3}
+  dispatchSize: 0
+  threadGroupSize: 0
+--- !u!114 &1106882907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1106882902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 374d6f4bf85948ed9ac7c6645dfd06de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiHandler: {fileID: 1775164331}
+  canRun: 0
+  addGravity: 0
+  gravityAcceleration: 0
+  gravityDirection: {x: 0, y: -1, z: 0}
+  addRandomInitVelocity: 0
+  cage: {fileID: 1192940115}
+  objectsInfo: []
+  movementForces: []
+  collisionShader: {fileID: 7200000, guid: 44042dd6b3f641d582d299c6672e50dc, type: 3}
   dispatchSize: 0
   threadGroupSize: 0
 --- !u!1 &1192940115

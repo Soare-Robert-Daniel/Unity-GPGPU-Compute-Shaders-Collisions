@@ -1,18 +1,15 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
-using Random = UnityEngine.Random;
 using SysRandom = System.Random;
 
 public class Spawner : MonoBehaviour
 {
     [SerializeField] private CPUCollision cpuCollision;
-    [SerializeField] private GPUCollisions gpuCollisions;
+    [SerializeField] private GPUCollisionsV2 gpuCollisions;
 
     [Header("Spawn Matrix")]
     public int rows;
+
     public int columns;
     public int height;
     public Vector3 offsetRow;
@@ -20,17 +17,20 @@ public class Spawner : MonoBehaviour
     public Vector3 offsetHeight;
     public bool random;
     public float randomRange;
-    
+
     [Header("Cubes")]
     public int cubesNumber;
+
     [SerializeField] private GameObject cubeTemplate;
-    
+
     [Header("Spheres")]
     public int spheresNumber;
+
     [SerializeField] private GameObject sphereTemplate;
-    
+
     [Header("Cylinders")]
     public int cylindersNumber;
+
     [SerializeField] private GameObject cylinderTemplate;
 
     private void Start()
@@ -115,11 +115,11 @@ public class Spawner : MonoBehaviour
 
         if (gpuCollisions.isActiveAndEnabled)
         {
-            gpuCollisions.UpdateObjects();
-            gpuCollisions.canRun = true;
+            gpuCollisions.InitObjects();
+            // gpuCollisions.canRun = true;
         }
     }
-    
+
     public static void Shuffle<T>(IList<T> list)  
     {  
         var rng = new SysRandom();

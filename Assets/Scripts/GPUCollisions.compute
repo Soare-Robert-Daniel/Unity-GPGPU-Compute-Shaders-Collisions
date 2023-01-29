@@ -1,0 +1,48 @@
+﻿#pragma kernel main
+
+struct object_data
+{
+    float mass;
+    float3 velocity;
+    float3 position;
+};
+
+RWStructuredBuffer<object_data> objects;
+
+struct sphere_data
+{
+    float radius;
+    float3 center;
+};
+
+struct triangle_data_simple
+{
+    int index;
+    float3 center;
+    int vertices_num;
+    int indices_num;
+};
+
+int num_objects;
+int spheres_num;
+int triangles_num;
+
+StructuredBuffer<int> objects_type;
+StructuredBuffer<sphere_data> spheres;
+StructuredBuffer<triangle_data_simple> triangles;
+
+StructuredBuffer<float3> triangle_vertices;
+StructuredBuffer<int> triangle_indices;
+
+[numthreads(64, 1, 1)]
+void main(uint3 id: SV_DispatchThreadID)
+{
+    if( (int)id.x > num_objects )
+    {
+        return;
+    }
+
+    objects[id.x].position = float3(-1, -2, -3);
+    objects[id.x].velocity = float3(-1, 0, -1);
+    objects[id.x].mass = -5;
+}

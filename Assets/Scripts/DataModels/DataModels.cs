@@ -6,7 +6,7 @@ namespace DataModels
     public enum ModelType
     {
         Sphere = 1,
-        Triangle
+        Triangle = 2 
     }
     [Serializable]
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -21,10 +21,20 @@ namespace DataModels
     public struct TriangleModel
     {
         public Vector3 center;
-        public float verticesNum;
-        public float indicesNum;
+        public int verticesNum;
+        public int indicesNum;
         public Vector3[] vertices;
         public int[] indices;
+    }
+
+    [Serializable]
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public struct TriangleModelSimple
+    {
+        public int index;
+        public Vector3 center;
+        public int verticesNum;
+        public int indicesNum;
     }
     
     [Serializable]

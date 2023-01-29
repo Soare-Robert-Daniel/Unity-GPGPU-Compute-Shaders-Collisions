@@ -1,14 +1,7 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using DataModels;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
-using UnityEngine.Serialization;
-using Debug = UnityEngine.Debug;
-using Random = UnityEngine.Random;
 
 public class CPUCollision : MonoBehaviour
 {
@@ -20,24 +13,24 @@ public class CPUCollision : MonoBehaviour
     public bool addRandomInitVelocity;
 
     [SerializeField] private GameObject cage;
-    private TriangleModel cageModel;
-    private AABBModel cageAABB;
-    
-    private ModelType[] modelTypes;
 
-    private SphereModel[] sphereModels;
-    private GameObject[] spheresGameObjects;
-
-    private TriangleModel[] triangleModels;
-    private GameObject[] trianglesGameObjects;
-    private Mesh[] triangleMeshes;
+    [SerializeField] TriangleModel[] triangleModels;
 
     [SerializeField] private ObjectData[] objectsInfo;
     [SerializeField] private Vector3[] movementForces;
 
-    private Vector3 Gravity => gravityDirection * gravityAcceleration;
-
     private Stopwatch _stopwatch;
+    private AABBModel cageAABB;
+    private TriangleModel cageModel;
+
+    private ModelType[] modelTypes;
+
+    private SphereModel[] sphereModels;
+    private GameObject[] spheresGameObjects;
+    private Mesh[] triangleMeshes;
+    private GameObject[] trianglesGameObjects;
+
+    private Vector3 Gravity => gravityDirection * gravityAcceleration;
 
     private void Start()
     {
@@ -271,7 +264,7 @@ public class CPUCollision : MonoBehaviour
 
         ResetForces();
     }
-    
+
     private void ResetForces()
     {
         for (var i = 0; i < movementForces.Length; i++)
@@ -301,15 +294,5 @@ public class CPUCollision : MonoBehaviour
             }
             objectsInfo[i + sphereModels.Length].position = trianglesGameObjects[i].transform.position;
         }
-    }
-
-    private static bool Intersect(AABBdata a, AABBdata b)
-    {
-        return a.min.x <= b.max.x &&
-               a.max.x >= b.min.x &&
-               a.min.y <= b.max.y &&
-               a.max.y >= b.min.y &&
-               a.min.z <= b.max.z &&
-               a.max.z >= b.min.z;
     }
 }
