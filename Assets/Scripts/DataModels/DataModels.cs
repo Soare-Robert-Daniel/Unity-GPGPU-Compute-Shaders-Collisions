@@ -6,8 +6,9 @@ namespace DataModels
     public enum ModelType
     {
         Sphere = 1,
-        Triangle = 2 
+        Triangle = 2
     }
+
     [Serializable]
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct SphereModel
@@ -15,7 +16,7 @@ namespace DataModels
         public float radius;
         public Vector3 center;
     }
-    
+
     [Serializable]
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct TriangleModel
@@ -35,8 +36,10 @@ namespace DataModels
         public Vector3 center;
         public int verticesNum;
         public int indicesNum;
+        public int verticesOffset;
+        public int indicesOffset;
     }
-    
+
     [Serializable]
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct AABBModel
@@ -44,5 +47,11 @@ namespace DataModels
         public Vector3 max;
         public Vector3 min;
     }
-    
+
+    [Serializable]
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public struct PhysicsData
+    {
+        public Vector3 force;
+    }
 }

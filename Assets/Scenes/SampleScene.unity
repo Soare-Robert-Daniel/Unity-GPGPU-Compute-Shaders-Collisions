@@ -500,9 +500,9 @@ MonoBehaviour:
   rows: 20
   columns: 20
   height: 10
-  offsetRow: {x: 3, y: 0, z: 0}
-  offsetColumn: {x: 0, y: 0, z: 3}
-  offsetHeight: {x: 0, y: 3, z: 0}
+  offsetRow: {x: 1, y: 0, z: 0}
+  offsetColumn: {x: 0, y: 0, z: 1}
+  offsetHeight: {x: 0, y: 1, z: 0}
   random: 1
   randomRange: 1
   cubesNumber: 5
@@ -511,7 +511,7 @@ MonoBehaviour:
   spheresNumber: 5
   sphereTemplate: {fileID: 8413638373159485784, guid: 55f69da2b7f2a438c9a3df14956f3172,
     type: 3}
-  cylindersNumber: 5
+  cylindersNumber: 10
   cylinderTemplate: {fileID: 2372650318647434359, guid: 922de3a671a95ea4baee22605efebe77,
     type: 3}
 --- !u!114 &1106882906
@@ -554,8 +554,10 @@ MonoBehaviour:
   gravityDirection: {x: 0, y: -1, z: 0}
   addRandomInitVelocity: 0
   cage: {fileID: 1192940115}
+  triangleVertices: []
+  triangleIndices: 
   objectsInfo: []
-  movementForces: []
+  physicsForces: []
   collisionShader: {fileID: 7200000, guid: 44042dd6b3f641d582d299c6672e50dc, type: 3}
   dispatchSize: 0
   threadGroupSize: 0

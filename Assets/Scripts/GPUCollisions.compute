@@ -1,13 +1,15 @@
 ﻿#pragma kernel main
 
+/*
+ *  MAIN DATA STRUCTURES
+ */
+
 struct object_data
 {
     float mass;
     float3 velocity;
     float3 position;
 };
-
-RWStructuredBuffer<object_data> objects;
 
 struct sphere_data
 {
@@ -21,18 +23,347 @@ struct triangle_data_simple
     float3 center;
     int vertices_num;
     int indices_num;
+    int vertices_offset;
+    int indices_offset;
+};
+
+struct physics_data
+{
+    float3 force;
 };
 
 int num_objects;
 int spheres_num;
 int triangles_num;
 
+StructuredBuffer<object_data> objects;
 StructuredBuffer<int> objects_type;
 StructuredBuffer<sphere_data> spheres;
 StructuredBuffer<triangle_data_simple> triangles;
 
 StructuredBuffer<float3> triangle_vertices;
 StructuredBuffer<int> triangle_indices;
+
+RWStructuredBuffer<physics_data> physics;
+
+/*
+ * INTERNAL DATA STRUCTURES
+ */
+
+struct collision_data 
+{
+    float3 normal;
+    float3 position;
+    float penetration;
+};
+
+struct tri 
+{
+    float3 a;
+    float3 b;
+    float3 c;
+};
+
+/*
+ *  HELPER FUNCTIONS
+ */
+
+collision_data sphere_sphere_collision(const sphere_data a, const sphere_data b)
+{
+    collision_data result;
+    result.normal = float3(0, 0, 0);
+    result.position = float3(0, 0, 0);
+    result.penetration = 0;
+
+    const float3 delta = b.center - a.center;
+    const float distance = length(delta);
+    const float radius_sum = a.radius + b.radius;
+
+    if( distance < radius_sum )
+    {
+        result.normal = normalize(delta);
+        result.position = a.center + result.normal * distance;
+        result.penetration = radius_sum - distance;
+    }
+
+    return result;
+}
+
+float2 get_interval_for_axis_on_triangle(const tri t, const float3 axis)
+{
+    float2 result = float2(0, 0);
+    
+    {
+        const float3 vertex = t.a;
+        const float projection = dot(axis, vertex);
+
+        result.x = min(result.x, projection);
+        result.y = max(result.y, projection);
+    }
+
+    {
+        const float3 vertex = t.b;
+        const float projection = dot(axis, vertex);
+
+        result.x = min(result.x, projection);
+        result.y = max(result.y, projection);
+    }
+
+    {
+        const float3 vertex = t.c;
+        const float projection = dot(axis, vertex);
+
+        result.x = min(result.x, projection);
+        result.y = max(result.y, projection);
+    }
+
+    return result;
+}
+
+bool are_triangle_triangle_overlapping_on_axis(const tri t1, const tri t2, const float3 axis)
+{
+    const float2 a_interval = get_interval_for_axis_on_triangle(t1, axis);
+    const float2 b_interval = get_interval_for_axis_on_triangle(t2, axis);
+
+    return (a_interval.x <= b_interval.y) && (b_interval.x <= a_interval.y);
+}
+
+float3 try_find_valid_axis(const float3 a, const float3 b, const float3 c, const float3 d)
+{
+    const float3 ab = a - b;
+    const float3 cd = c - d;
+
+    float3 axis = normalize( cross(ab, cd) );
+    if( length(axis) > 0.00001f )
+    {
+        return axis;
+    }
+
+    const float3 support = cross(ab, c - a);
+    axis = normalize( cross(ab, support) );
+
+    if (length(axis) > 0.00001f)
+    {
+        return axis;
+    }
+
+    return float3(0, 0, 0);
+}
+
+bool triangle_triangle_intersection(const tri t1, const tri t2)
+{
+    bool result = false;
+    
+    const float3 a1 = t1.a;
+    const float3 b1 = t1.b;
+    const float3 c1 = t1.c;
+
+    const float3 a2 = t2.a;
+    const float3 b2 = t2.b;
+    const float3 c2 = t2.c;
+
+    // Triangle 1 Normal
+    {
+        const float3 ab = b1 - a1;
+        const float3 ac = c1 - a1;
+        const float3 n = normalize( cross(ab, ac) );
+
+        result = are_triangle_triangle_overlapping_on_axis(t1, t2, n);
+    }
+
+    // Triangle 2 Normal
+    {
+        const float3 ab = b2 - a2;
+        const float3 ac = c2 - a2;
+        const float3 n = normalize( cross(ab, ac) );
+
+        result = result && are_triangle_triangle_overlapping_on_axis(t1, t2, n);
+    }
+
+    // Edge cross products 3x3
+    {
+        // (a1 - b1) x (...)
+        {
+            result = result &&
+                are_triangle_triangle_overlapping_on_axis(t1, t2, try_find_valid_axis(a1, b1, a2, b2));
+
+            result = result &&
+                are_triangle_triangle_overlapping_on_axis(t1, t2, try_find_valid_axis(a1, b1, b2, c2));
+
+            result = result &&
+                are_triangle_triangle_overlapping_on_axis(t1, t2, try_find_valid_axis(a1, b1, c2, a1));
+        }
+
+        // (b1 - c1) x (...)
+        {
+            result = result &&
+                are_triangle_triangle_overlapping_on_axis(t1, t2, try_find_valid_axis(b1, c1, a2, b2));
+
+            result = result &&
+                are_triangle_triangle_overlapping_on_axis(t1, t2, try_find_valid_axis(b1, c1, b2, c2));
+
+            result = result &&
+                are_triangle_triangle_overlapping_on_axis(t1, t2, try_find_valid_axis(b1, c1, c2, a1));
+        }
+
+        // (c1 - a1) x (...)
+        {
+            result = result &&
+                are_triangle_triangle_overlapping_on_axis(t1, t2, try_find_valid_axis(c1, a1, a2, b2));
+
+            result = result &&
+                are_triangle_triangle_overlapping_on_axis(t1, t2, try_find_valid_axis(c1, a1, b2, c2));
+
+            result = result &&
+                are_triangle_triangle_overlapping_on_axis(t1, t2, try_find_valid_axis(c1, a1, c2, a1));
+        }
+    }
+    
+    return result;
+}
+
+collision_data has_collision_triangle_to_triangle_on_triangles(const triangle_data_simple a, const triangle_data_simple b)
+{
+    collision_data result;
+    result.position = float3(0, 0, 0);
+    result.normal = float3(0, 0, 0);
+    result.penetration = 0.0f;
+    
+    for(int i = 0; i < a.indices_num - 1; i+=3)
+    {
+        tri t1;
+        t1.a = triangle_vertices[a.vertices_offset + triangle_indices[a.indices_offset + i]];
+        t1.b =  triangle_vertices[a.vertices_offset + triangle_indices[a.indices_offset + i + 1]];
+        t1.c =  triangle_vertices[a.vertices_offset + triangle_indices[a.indices_offset + i + 2]];
+        
+        for(int j = 0; j < b.indices_num - 1; j+=3)
+        {
+            tri t2;
+            t2.a = triangle_vertices[b.vertices_offset + triangle_indices[b.indices_offset + j]];
+            t2.b = triangle_vertices[b.vertices_offset + triangle_indices[b.indices_offset + j + 1]];
+            t2.c = triangle_vertices[b.vertices_offset + triangle_indices[b.indices_offset + j + 2]];
+            
+            if( triangle_triangle_intersection(t1, t2) )
+            {
+                const float3 ab = t1.b - t1.a;
+                const float3 ac = t1.c - t1.a;
+                const float3 n = normalize( cross(ab, ac) );
+
+                result.normal = normalize(n + result.normal) ;
+                result.penetration = 1;
+            }
+        }
+    }
+
+    return result;
+}
+
+float3 get_closest_point_in_triangle(float3 p, float3 a, float3 b, float3 c)
+{
+    const float3 d1 = p - a;
+    const float3 d2 = p - b;
+    const float3 d3 = p - c;
+
+    const float dist1 = length(d1);
+    const float dist2 = length(d2);
+    const float dist3 = length(d3);
+
+    float min_dist = min(dist1, dist2);
+    min_dist = min(min_dist, dist3);
+
+    if( abs(min_dist - dist1) < 0.000001f)
+    {
+        return d1;
+    }
+
+    if (abs(min_dist - dist2) < 0.000001f)
+    {
+        return d2;
+    }
+
+    return d3;
+}
+
+bool is_point_in_triangle(float3 a, float3 b, float3 c, float3 p)
+{
+    const float3 _a = a - p;
+    const float3 _b = b - p;
+    const float3 _c = c - p;
+
+    const float3 u = cross(_b, _b);
+    const float3 v = cross(_c, _a);
+    const float3 w = cross(_a, _b);
+
+    if (dot(u, v) < 0.0f)
+    {
+        return false;
+    }
+
+    if (dot(u, w) < 0.0f)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+float3 closest_point_to_line(const float3 a , const float3 b, const float p)
+{
+    float t = dot(p - a, b - a) / dot( b - a, b - a);
+
+    t = clamp(t, 0.0f, 1.0f);
+
+    return a + t * (b - a);
+}
+
+float3 triangle_point_intersection(const float3 a, const float3 b, const float3 c, const float3 p)
+{
+    const float3 plane_normal = normalize(cross(b - a, c - a));
+    const float3 plane_distance = dot(plane_normal, a);
+
+    const float3 projected_point = p - plane_normal * (dot(plane_normal, p) - plane_distance);
+
+    if( is_point_in_triangle(a, b, c, projected_point) )
+    {
+        return projected_point;
+    }
+
+    const float3 closest_point_ab = closest_point_to_line(a, b, projected_point);
+    const float3 closest_point_bc = closest_point_to_line(c, b, projected_point);
+    const float3 closest_point_ca = closest_point_to_line(a, c, projected_point);
+
+    return get_closest_point_in_triangle(projected_point, closest_point_ab, closest_point_bc, closest_point_ca);
+}
+
+collision_data has_collision_triangle_to_sphere(const triangle_data_simple a, const sphere_data b)
+{
+    collision_data result;
+    result.position = float3(0, 0, 0);
+    result.normal = float3(0, 0, 0);
+    result.penetration = 0.0f;
+    
+    for(int i = 0; i < a.indices_num - 1; i+=3)
+    {
+        tri t1;
+        t1.a = triangle_vertices[a.vertices_offset + triangle_indices[a.indices_offset + i]];
+        t1.b =  triangle_vertices[a.vertices_offset + triangle_indices[a.indices_offset + i + 1]];
+        t1.c =  triangle_vertices[a.vertices_offset + triangle_indices[a.indices_offset + i + 2]];
+        
+        const float3 closest_point = triangle_point_intersection(t1.a, t1.b, t1.c, b.center);
+
+        if (length(closest_point - b.center) < b.radius)
+        {
+            const float3 ab = t1.b - t1.a;
+            const float3 ac = t1.c - t1.a;
+            const float3 n = normalize( cross(ab, ac) );
+
+            result.normal = normalize(n + result.normal) ;
+            result.penetration = 1;
+        }
+    }
+
+    return result;
+}
 
 [numthreads(64, 1, 1)]
 void main(uint3 id: SV_DispatchThreadID)
@@ -42,7 +373,54 @@ void main(uint3 id: SV_DispatchThreadID)
         return;
     }
 
-    objects[id.x].position = float3(-1, -2, -3);
-    objects[id.x].velocity = float3(-1, 0, -1);
-    objects[id.x].mass = -5;
+    float3 force = float3(0, 0, 0);
+
+    for (int i = 0; i < num_objects; ++i)
+    {
+        if( i == (int)id.x )
+        {
+            continue;
+        }
+        
+        if( objects_type[(int)id.x] == 1 ) // Este sfera
+        {
+            if( objects_type[i] == 1 ) // Este sfera
+            {
+                const collision_data collision = sphere_sphere_collision(spheres[(int)id.x], spheres[i]);
+                if( collision.penetration > 0 )
+                {
+                    force += collision.normal;
+                }
+            } else if( objects_type[i] == 2 ) // Este triunghi
+            {
+                const collision_data collision = has_collision_triangle_to_sphere(triangles[i], spheres[(int)id.x]);
+                if( collision.penetration > 0 )
+                {
+                    force += -collision.normal;
+                }
+            }
+        }
+
+        if( objects_type[(int)id.x] == 2 ) // Este triunghi
+        {
+            if( objects_type[i] == 2 ) // Este triunghi
+            {
+                const collision_data collision = has_collision_triangle_to_triangle_on_triangles(triangles[(int)id.x], triangles[i]);
+                if( collision.penetration > 0 )
+                {
+                    force += collision.normal;
+                }
+            } else if( objects_type[i] == 1 ) // Este sfera
+            {
+                const collision_data collision = has_collision_triangle_to_sphere(triangles[(int)id.x], spheres[i]);
+                if( collision.penetration > 0 )
+                {
+                    force += collision.normal;
+                }
+            }
+            
+        }
+    }
+
+    physics[(int)id.x].force = force;
 }
