@@ -13,7 +13,7 @@ namespace DataModels
         public Vector3 velocity;
         public Vector3 position;
     }
-    
+
     [Serializable]
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct CollisionData
@@ -34,6 +34,7 @@ namespace DataModels
             return string.Join("\n", normals.Zip(depths, (normal, depth) => normal + " with " + depth));
         }
     }
+
     public static class ModelsCollision
     {
         public static CollisionData GetSphereToSphereCollision(SphereModel a, SphereModel b)
@@ -192,11 +193,11 @@ namespace DataModels
             for (var i = 0; i < a.indicesNum - 1; i += 3)
             {
                 var tri1 = new[]
-                    {a.vertices[a.indices[i]], a.vertices[a.indices[i + 1]], a.vertices[a.indices[i + 2]]};
+                    { a.vertices[a.indices[i]], a.vertices[a.indices[i + 1]], a.vertices[a.indices[i + 2]] };
                 for (var j = 0; j < b.indicesNum - 1; j += 3)
                 {
                     var tri2 = new[]
-                        {b.vertices[b.indices[j]], b.vertices[b.indices[j + 1]], b.vertices[b.indices[j + 2]]};
+                        { b.vertices[b.indices[j]], b.vertices[b.indices[j + 1]], b.vertices[b.indices[j + 2]] };
 
                     if (TriangleTriangleIntersection(tri1, tri2))
                     {
@@ -208,12 +209,12 @@ namespace DataModels
             }
 
             var data = new CollisionData(collisionOnTriangles.Count);
-            
+
             var index = 0;
             foreach (var triangle in collisionOnTriangles)
             {
                 var tri = new[]
-                    {a.vertices[a.indices[triangle]], a.vertices[a.indices[triangle + 1]], a.vertices[a.indices[triangle + 2]]};
+                    { a.vertices[a.indices[triangle]], a.vertices[a.indices[triangle + 1]], a.vertices[a.indices[triangle + 2]] };
                 var AB = tri[1] - tri[0];
                 var AC = tri[2] - tri[0];
                 var N = Vector3.Cross(AB, AC).normalized;
@@ -298,7 +299,7 @@ namespace DataModels
                 return proj;
             }
 
-            var pAB = ClosestPointToLine(b, a, p);
+            var pAB = ClosestPointToLine(a, b, p);
             var pBC = ClosestPointToLine(c, b, p);
             var pCA = ClosestPointToLine(a, c, p);
 
@@ -322,12 +323,12 @@ namespace DataModels
             }
 
             var data = new CollisionData(collisionOnTriangles.Count);
-            
+
             var index = 0;
             foreach (var triangle in collisionOnTriangles)
             {
                 var tri = new[]
-                    {a.vertices[a.indices[triangle]], a.vertices[a.indices[triangle + 1]], a.vertices[a.indices[triangle + 2]]};
+                    { a.vertices[a.indices[triangle]], a.vertices[a.indices[triangle + 1]], a.vertices[a.indices[triangle + 2]] };
                 var AB = tri[1] - tri[0];
                 var AC = tri[2] - tri[0];
                 var N = Vector3.Cross(AB, AC).normalized;

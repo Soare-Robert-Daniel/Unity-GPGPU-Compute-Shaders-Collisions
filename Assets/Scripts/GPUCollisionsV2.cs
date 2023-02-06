@@ -2,7 +2,6 @@
 using System.Linq;
 using DataModels;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 public class GPUCollisionsV2 : MonoBehaviour
 {
@@ -77,7 +76,7 @@ public class GPUCollisionsV2 : MonoBehaviour
 
         RetrieveDataFromBuffer();
 
-        Debug.Log(string.Join("|", physicsForces.Select(x => $"{x.force}")));
+        // Debug.Log(string.Join("|", physicsForces.Select(x => $"{x.force}")));
 
         for (var i = 0; i < modelTypes.Length; i++)
         {

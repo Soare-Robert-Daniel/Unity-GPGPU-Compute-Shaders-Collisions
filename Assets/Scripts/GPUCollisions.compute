@@ -258,7 +258,7 @@ collision_data has_collision_triangle_to_triangle_on_triangles(const triangle_da
     return result;
 }
 
-float3 get_closest_point_in_triangle(float3 p, float3 a, float3 b, float3 c)
+float3 get_closest_point(float3 p, float3 a, float3 b, float3 c)
 {
     const float3 d1 = p - a;
     const float3 d2 = p - b;
@@ -284,7 +284,7 @@ float3 get_closest_point_in_triangle(float3 p, float3 a, float3 b, float3 c)
     return d3;
 }
 
-bool is_point_in_triangle(float3 a, float3 b, float3 c, float3 p)
+bool is_point_in_triangle(const float3 a, const float3 b, const float3 c, const float3 p)
 {
     const float3 _a = a - p;
     const float3 _b = b - p;
@@ -307,7 +307,7 @@ bool is_point_in_triangle(float3 a, float3 b, float3 c, float3 p)
     return true;
 }
 
-float3 closest_point_to_line(const float3 a , const float3 b, const float p)
+float3 closest_point_to_line(const float3 a , const float3 b, const float3 p)
 {
     float t = dot(p - a, b - a) / dot( b - a, b - a);
 
@@ -332,7 +332,7 @@ float3 triangle_point_intersection(const float3 a, const float3 b, const float3 
     const float3 closest_point_bc = closest_point_to_line(c, b, projected_point);
     const float3 closest_point_ca = closest_point_to_line(a, c, projected_point);
 
-    return get_closest_point_in_triangle(projected_point, closest_point_ab, closest_point_bc, closest_point_ca);
+    return get_closest_point(projected_point, closest_point_ab, closest_point_bc, closest_point_ca);
 }
 
 collision_data has_collision_triangle_to_sphere(const triangle_data_simple a, const sphere_data b)
@@ -386,17 +386,24 @@ void main(uint3 id: SV_DispatchThreadID)
         {
             if( objects_type[i] == 1 ) // Este sfera
             {
-                const collision_data collision = sphere_sphere_collision(spheres[(int)id.x], spheres[i]);
-                if( collision.penetration > 0 )
+                if( length(spheres[(int)id.x].center - spheres[i].center) < 3.0f )
                 {
-                    force += collision.normal;
+                    const collision_data collision = sphere_sphere_collision(spheres[(int)id.x], spheres[i]);
+                    if( collision.penetration > 0 )
+                    {
+                        force += collision.normal;
+                    }
                 }
+               
             } else if( objects_type[i] == 2 ) // Este triunghi
             {
-                const collision_data collision = has_collision_triangle_to_sphere(triangles[i], spheres[(int)id.x]);
-                if( collision.penetration > 0 )
+                if( length(spheres[(int)id.x].center - triangles[i].center) < 3.0f )
                 {
-                    force += -collision.normal;
+                    const collision_data collision = has_collision_triangle_to_sphere(triangles[i], spheres[(int)id.x]);
+                    if( collision.penetration > 0 )
+                    {
+                        force += -collision.normal;
+                    }
                 }
             }
         }
@@ -405,17 +412,25 @@ void main(uint3 id: SV_DispatchThreadID)
         {
             if( objects_type[i] == 2 ) // Este triunghi
             {
-                const collision_data collision = has_collision_triangle_to_triangle_on_triangles(triangles[(int)id.x], triangles[i]);
-                if( collision.penetration > 0 )
+
+                if (length(triangles[(int)id.x].center - triangles[i].center) < 3.0f)
                 {
-                    force += collision.normal;
+                    const collision_data collision = has_collision_triangle_to_triangle_on_triangles(triangles[(int)id.x], triangles[i]);
+                    if( collision.penetration > 0 )
+                    {
+                        force += collision.normal;
+                    }
                 }
+                
             } else if( objects_type[i] == 1 ) // Este sfera
             {
-                const collision_data collision = has_collision_triangle_to_sphere(triangles[(int)id.x], spheres[i]);
-                if( collision.penetration > 0 )
+                if (length(triangles[(int)id.x].center - spheres[i].center) < 3.0f)
                 {
-                    force += collision.normal;
+                    const collision_data collision = has_collision_triangle_to_sphere(triangles[(int)id.x], spheres[i]);
+                    if( collision.penetration > 0 )
+                    {
+                        force += collision.normal;
+                    }
                 }
             }
             
