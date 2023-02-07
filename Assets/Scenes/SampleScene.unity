@@ -453,14 +453,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106882902}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6ad5445c8c6e89143b152e13ef0ab245, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   uiHandler: {fileID: 1775164331}
-  canRun: 0
-  addGravity: 0
+  canRun: 1
+  addGravity: 1
   gravityAcceleration: 1
   gravityDirection: {x: 0, y: -1, z: 0}
   addRandomInitVelocity: 1
@@ -505,13 +505,13 @@ MonoBehaviour:
   offsetHeight: {x: 0, y: 3, z: 0}
   random: 1
   randomRange: 1
-  cubesNumber: 250
+  cubesNumber: 1000
   cubeTemplate: {fileID: 8440513633421467054, guid: e7d3200e1c412eb49932e154bd3faa77,
     type: 3}
   spheresNumber: 500
   sphereTemplate: {fileID: 8413638373159485784, guid: 55f69da2b7f2a438c9a3df14956f3172,
     type: 3}
-  cylindersNumber: 1000
+  cylindersNumber: 2500
   cylinderTemplate: {fileID: 2372650318647434359, guid: 922de3a671a95ea4baee22605efebe77,
     type: 3}
 --- !u!114 &1106882906
@@ -542,14 +542,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106882902}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 374d6f4bf85948ed9ac7c6645dfd06de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   uiHandler: {fileID: 1775164331}
   canRun: 0
-  addGravity: 0
+  addGravity: 1
   gravityAcceleration: 0
   gravityDirection: {x: 0, y: -1, z: 0}
   addRandomInitVelocity: 0
