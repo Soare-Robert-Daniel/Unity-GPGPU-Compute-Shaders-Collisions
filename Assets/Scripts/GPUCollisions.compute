@@ -122,6 +122,9 @@ float2 get_interval_for_axis_on_triangle(const tri t, const float3 axis)
 
 bool are_triangle_triangle_overlapping_on_axis(const tri t1, const tri t2, const float3 axis)
 {
+
+    if( length(axis) < 0.00001f ) return false;
+    
     const float2 a_interval = get_interval_for_axis_on_triangle(t1, axis);
     const float2 b_interval = get_interval_for_axis_on_triangle(t2, axis);
 
