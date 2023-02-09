@@ -86,8 +86,8 @@ float2 get_interval_for_axis_on_triangle(const tri t, const float3 axis)
     float2 result = float2(0, 0);
 
     float projection = dot(axis, t.a);
-    result.x = min(result.x, projection);
-    result.y = max(result.y, projection);
+    result.x = projection;
+    result.y = projection;
 
     projection = dot(axis, t.b);
     result.x = min(result.x, projection);
@@ -102,10 +102,21 @@ float2 get_interval_for_axis_on_triangle(const tri t, const float3 axis)
 
 bool are_triangle_triangle_overlapping_on_axis(const tri t1, const tri t2, const float3 axis)
 {
-    const float2 a_interval = get_interval_for_axis_on_triangle(t1, axis);
-    const float2 b_interval = get_interval_for_axis_on_triangle(t2, axis);
 
-    return (a_interval.x <= b_interval.y) && (b_interval.x <= a_interval.y);
+    bool result;
+
+    if( length(axis) < 0.0001f )
+    {
+        result = false;
+    } else
+    {
+        const float2 a_interval = get_interval_for_axis_on_triangle(t1, axis);
+        const float2 b_interval = get_interval_for_axis_on_triangle(t2, axis);
+
+        result = (a_interval.x <= b_interval.y) && (b_interval.x <= a_interval.y);
+    }
+
+    return result;
 }
 
 float3 try_find_valid_axis(const float3 a, const float3 b, const float3 c, const float3 d)
@@ -114,7 +125,7 @@ float3 try_find_valid_axis(const float3 a, const float3 b, const float3 c, const
     const float3 cd = c - d;
 
     float3 axis = normalize( cross(ab, cd) );
-    if( length(axis) > 0.00001f )
+    if( length(axis) >= 0.0001f )
     {
         return axis;
     }
@@ -122,7 +133,7 @@ float3 try_find_valid_axis(const float3 a, const float3 b, const float3 c, const
     const float3 support = cross(ab, c - a);
     axis = normalize( cross(ab, support) );
 
-    if (length(axis) > 0.00001f)
+    if (length(axis) >= 0.0001f)
     {
         return axis;
     }
@@ -228,7 +239,7 @@ collision_data has_collision_triangle_to_triangle_on_triangles(const triangle_da
                 /**
                  * !!! Calculul normalei pe Unity cu Metal (MacOS) prezinta niste erori.
                  */
-                result.normal = normalize( normalize( cross(t1.b - t1.a, t1.c - t1.a) ) + result.normal );
+                result.normal = normalize( cross(t1.b - t1.a, t1.c - t1.a) );
                 result.penetration = 1;
             }
         }
@@ -255,16 +266,16 @@ float3 get_closest_point(const float3 p, const float3 a, const float3 b, const f
     float min_dist = min(dist1, dist2);
     min_dist = min(min_dist, dist3);
 
-    float3 result = c;
+    float3 result = d3;
 
     if( abs(min_dist - dist1) < 0.000001f)
     {
-        result = a;
+        result = d1;
     }
 
     if (abs(min_dist - dist2) < 0.000001f)
     {
-        result = b;
+        result = d2;
     }
 
     return result;
@@ -406,13 +417,12 @@ void main(uint3 id: SV_DispatchThreadID)
         {
             if( objects_type[i] == 2 ) // Este triunghi
             {
-                // NEFUNCTIONAL PE MACOS
                 if (length(triangles[(int)id.x].center - triangles[i].center) < 3.0f)
                 {
                     const collision_data collision = has_collision_triangle_to_triangle_on_triangles(triangles[(int)id.x], triangles[i]);
                     if( collision.penetration > 0 )
                     {
-                        force += normalize(triangles[(int)id.x].center - triangles[i].center);
+                        force += collision.normal;
                     }
                 }
                 

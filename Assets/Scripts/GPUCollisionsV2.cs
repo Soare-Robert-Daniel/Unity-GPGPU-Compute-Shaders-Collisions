@@ -3,7 +3,6 @@ using System.Linq;
 using DataModels;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
-using Unity.Collections.LowLevel.Unsafe;
 
 public class GPUCollisionsV2 : MonoBehaviour
 {
@@ -77,14 +76,23 @@ public class GPUCollisionsV2 : MonoBehaviour
         }
 
         RetrieveDataFromBuffer();
-        
+
         // Debug.Log(string.Join("|", triangleIndices.Select(x => $"{x}")));
         // Debug.Log(string.Join("|", triangleModelsSimple.Select(x => $"{x.verticesOffset}")));
 
-        Debug.Log(string.Join("|", physicsForces.Select(x => $"{x.force}")));
+        // Debug.Log(string.Join("|", physicsForces.Select(x => $"{x.force}")));
 
         for (var i = 0; i < modelTypes.Length; i++)
         {
+            // Check if physics has NaN values
+            if (float.IsNaN(physicsForces[i].force.x) || float.IsNaN(physicsForces[i].force.y) ||
+                float.IsNaN(physicsForces[i].force.z))
+            {
+                Debug.LogError("Physics has NaN values");
+                physicsForces[i].force = Vector3.zero;
+            }
+
+
             physicsForces[i].force += Gravity;
             var forceDirection = physicsForces[i].force.normalized;
             var forceMagnitude = physicsForces[i].force.magnitude;
@@ -261,7 +269,7 @@ public class GPUCollisionsV2 : MonoBehaviour
     {
         for (var i = 0; i < physicsForces.Length; i++)
         {
-            physicsForces[i] = new PhysicsData(){force = Vector3.zero};
+            physicsForces[i] = new PhysicsData() { force = Vector3.zero };
         }
     }
 
@@ -285,6 +293,7 @@ public class GPUCollisionsV2 : MonoBehaviour
                     trianglesGameObjects[i].transform.TransformPoint(triangleMeshes[i].vertices[j]);
             }
             objectsInfo[i + sphereModels.Length].position = trianglesGameObjects[i].transform.position;
+            triangleModelsSimple[i].center = trianglesGameObjects[i].transform.position;
         }
     }
 

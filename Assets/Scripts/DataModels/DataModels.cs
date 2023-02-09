@@ -32,8 +32,9 @@ namespace DataModels
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct TriangleModelSimple
     {
-        public int index;
         public Vector3 center;
+
+        public int index;
         public int verticesNum;
         public int indicesNum;
         public int verticesOffset;
