@@ -2,6 +2,8 @@
 using System.Linq;
 using DataModels;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
+using Unity.Collections.LowLevel.Unsafe;
 
 public class GPUCollisionsV2 : MonoBehaviour
 {
@@ -57,7 +59,7 @@ public class GPUCollisionsV2 : MonoBehaviour
 
         UpdateSphereModels();
         UpdateTriangleVerticesArray();
-        // UpdateTriangleModels();
+        UpdateTriangleModels();
         // ResetMovement();
 
         _stopwatch.Reset();
@@ -75,8 +77,11 @@ public class GPUCollisionsV2 : MonoBehaviour
         }
 
         RetrieveDataFromBuffer();
+        
+        // Debug.Log(string.Join("|", triangleIndices.Select(x => $"{x}")));
+        // Debug.Log(string.Join("|", triangleModelsSimple.Select(x => $"{x.verticesOffset}")));
 
-        // Debug.Log(string.Join("|", physicsForces.Select(x => $"{x.force}")));
+        Debug.Log(string.Join("|", physicsForces.Select(x => $"{x.force}")));
 
         for (var i = 0; i < modelTypes.Length; i++)
         {
@@ -254,9 +259,9 @@ public class GPUCollisionsV2 : MonoBehaviour
 
     private void ResetForces()
     {
-        for (var i = 0; i < movementForces.Length; i++)
+        for (var i = 0; i < physicsForces.Length; i++)
         {
-            movementForces[i] = Vector3.zero;
+            physicsForces[i] = new PhysicsData(){force = Vector3.zero};
         }
     }
 
@@ -332,15 +337,15 @@ public class GPUCollisionsV2 : MonoBehaviour
 
     private void CreateBuffers()
     {
-        objectsBuffer = new ComputeBuffer(objectsInfo.Length,
-            OBJECT_DATA_STRIDE,
-            ComputeBufferType.Structured,
-            ComputeBufferMode.Immutable);
+        // objectsBuffer = new ComputeBuffer(objectsInfo.Length,
+        //     OBJECT_DATA_STRIDE,
+        //     ComputeBufferType.Structured,
+        //     ComputeBufferMode.Immutable);
         spheresBuffer = new ComputeBuffer(sphereModels.Length,
             SPHERE_MODEL_STRIDE,
             ComputeBufferType.Structured,
             ComputeBufferMode.Immutable);
-        trianglesBuffer = new ComputeBuffer(triangleModels.Length,
+        trianglesBuffer = new ComputeBuffer(triangleModelsSimple.Length,
             TRIANGLE_MODEL_SIMPLE_STRIDE,
             ComputeBufferType.Structured,
             ComputeBufferMode.Immutable);
@@ -370,7 +375,7 @@ public class GPUCollisionsV2 : MonoBehaviour
         collisionShader.GetKernelThreadGroupSizes(kernelId, out threadGroupSize, out _, out _);
         dispatchSize = Mathf.CeilToInt((float)objectsInfo.Length / threadGroupSize);
 
-        collisionShader.SetBuffer(kernelId, "objects", objectsBuffer);
+        // collisionShader.SetBuffer(kernelId, "objects", objectsBuffer);
         collisionShader.SetBuffer(kernelId, "objects_type", objectsTypeBuffer);
         collisionShader.SetBuffer(kernelId, "spheres", spheresBuffer);
         collisionShader.SetBuffer(kernelId, "triangles", trianglesBuffer);
@@ -386,7 +391,7 @@ public class GPUCollisionsV2 : MonoBehaviour
 
     private void SetDataToBuffer()
     {
-        objectsBuffer.SetData(objectsInfo);
+        // objectsBuffer.SetData(objectsInfo);
         spheresBuffer.SetData(sphereModels);
         trianglesBuffer.SetData(triangleModelsSimple);
         objectsTypeBuffer.SetData(modelTypes);
@@ -406,7 +411,7 @@ public class GPUCollisionsV2 : MonoBehaviour
 
     private void ReleaseBuffers()
     {
-        objectsBuffer.Dispose();
+        // objectsBuffer.Dispose();
         spheresBuffer.Dispose();
         trianglesBuffer.Dispose();
         objectsTypeBuffer.Dispose();

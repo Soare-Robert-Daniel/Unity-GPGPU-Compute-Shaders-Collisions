@@ -4,13 +4,6 @@
  *  MAIN DATA STRUCTURES
  */
 
-struct object_data
-{
-    float mass;
-    float3 velocity;
-    float3 position;
-};
-
 struct sphere_data
 {
     float radius;
@@ -36,7 +29,6 @@ int num_objects;
 int spheres_num;
 int triangles_num;
 
-StructuredBuffer<object_data> objects;
 StructuredBuffer<int> objects_type;
 StructuredBuffer<sphere_data> spheres;
 StructuredBuffer<triangle_data_simple> triangles;
@@ -92,31 +84,19 @@ collision_data sphere_sphere_collision(const sphere_data a, const sphere_data b)
 float2 get_interval_for_axis_on_triangle(const tri t, const float3 axis)
 {
     float2 result = float2(0, 0);
+
+    float projection = dot(axis, t.a);
+    result.x = min(result.x, projection);
+    result.y = max(result.y, projection);
+
+    projection = dot(axis, t.b);
+    result.x = min(result.x, projection);
+    result.y = max(result.y, projection);
+
+    projection = dot(axis, t.c);
+    result.x = min(result.x, projection);
+    result.y = max(result.y, projection);
     
-    {
-        const float3 vertex = t.a;
-        const float projection = dot(axis, vertex);
-
-        result.x = min(result.x, projection);
-        result.y = max(result.y, projection);
-    }
-
-    {
-        const float3 vertex = t.b;
-        const float projection = dot(axis, vertex);
-
-        result.x = min(result.x, projection);
-        result.y = max(result.y, projection);
-    }
-
-    {
-        const float3 vertex = t.c;
-        const float projection = dot(axis, vertex);
-
-        result.x = min(result.x, projection);
-        result.y = max(result.y, projection);
-    }
-
     return result;
 }
 
@@ -232,7 +212,7 @@ collision_data has_collision_triangle_to_triangle_on_triangles(const triangle_da
     for(int i = 0; i < a.indices_num - 1; i+=3)
     {
         tri t1;
-        t1.a = triangle_vertices[a.vertices_offset + triangle_indices[a.indices_offset + i]];
+        t1.a =  triangle_vertices[a.vertices_offset + triangle_indices[a.indices_offset + i]];
         t1.b =  triangle_vertices[a.vertices_offset + triangle_indices[a.indices_offset + i + 1]];
         t1.c =  triangle_vertices[a.vertices_offset + triangle_indices[a.indices_offset + i + 2]];
         
@@ -245,20 +225,24 @@ collision_data has_collision_triangle_to_triangle_on_triangles(const triangle_da
             
             if( triangle_triangle_intersection(t1, t2) )
             {
-                const float3 ab = t1.b - t1.a;
-                const float3 ac = t1.c - t1.a;
-                const float3 n = normalize( cross(ab, ac) );
-
-                result.normal = normalize(n + result.normal) ;
+                /**
+                 * !!! Calculul normalei pe Unity cu Metal (MacOS) prezinta niste erori.
+                 */
+                result.normal = normalize( normalize( cross(t1.b - t1.a, t1.c - t1.a) ) + result.normal );
                 result.penetration = 1;
             }
+        }
+
+        if( result.penetration > 0.5f )
+        {
+            break;
         }
     }
 
     return result;
 }
 
-float3 get_closest_point(float3 p, float3 a, float3 b, float3 c)
+float3 get_closest_point(const float3 p, const float3 a, const float3 b, const float3 c)
 {
     const float3 d1 = p - a;
     const float3 d2 = p - b;
@@ -271,17 +255,19 @@ float3 get_closest_point(float3 p, float3 a, float3 b, float3 c)
     float min_dist = min(dist1, dist2);
     min_dist = min(min_dist, dist3);
 
+    float3 result = c;
+
     if( abs(min_dist - dist1) < 0.000001f)
     {
-        return d1;
+        result = a;
     }
 
     if (abs(min_dist - dist2) < 0.000001f)
     {
-        return d2;
+        result = b;
     }
 
-    return d3;
+    return result;
 }
 
 bool is_point_in_triangle(const float3 a, const float3 b, const float3 c, const float3 p)
@@ -294,17 +280,19 @@ bool is_point_in_triangle(const float3 a, const float3 b, const float3 c, const 
     const float3 v = cross(_c, _a);
     const float3 w = cross(_a, _b);
 
+    bool result = true;
+
     if (dot(u, v) < 0.0f)
     {
-        return false;
+        result = false;
     }
 
     if (dot(u, w) < 0.0f)
     {
-        return false;
+        result = false;
     }
 
-    return true;
+    return result;
 }
 
 float3 closest_point_to_line(const float3 a , const float3 b, const float3 p)
@@ -323,16 +311,21 @@ float3 triangle_point_intersection(const float3 a, const float3 b, const float3 
 
     const float3 projected_point = p - plane_normal * (dot(plane_normal, p) - plane_distance);
 
+    float3 result;
+
     if( is_point_in_triangle(a, b, c, projected_point) )
     {
-        return projected_point;
+        result = projected_point;
+    } else
+    {
+        const float3 closest_point_ab = closest_point_to_line(a, b, projected_point);
+        const float3 closest_point_bc = closest_point_to_line(c, b, projected_point);
+        const float3 closest_point_ca = closest_point_to_line(a, c, projected_point);
+
+        result = get_closest_point(projected_point, closest_point_ab, closest_point_bc, closest_point_ca);
     }
-
-    const float3 closest_point_ab = closest_point_to_line(a, b, projected_point);
-    const float3 closest_point_bc = closest_point_to_line(c, b, projected_point);
-    const float3 closest_point_ca = closest_point_to_line(a, c, projected_point);
-
-    return get_closest_point(projected_point, closest_point_ab, closest_point_bc, closest_point_ca);
+    
+    return result;
 }
 
 collision_data has_collision_triangle_to_sphere(const triangle_data_simple a, const sphere_data b)
@@ -386,7 +379,7 @@ void main(uint3 id: SV_DispatchThreadID)
         {
             if( objects_type[i] == 1 ) // Este sfera
             {
-                if( length(spheres[(int)id.x].center - spheres[i].center) < 3.0f )
+                if( length(spheres[(int)id.x].center - spheres[i].center) < 5.0f )
                 {
                     const collision_data collision = sphere_sphere_collision(spheres[(int)id.x], spheres[i]);
                     if( collision.penetration > 0 )
@@ -395,9 +388,10 @@ void main(uint3 id: SV_DispatchThreadID)
                     }
                 }
                
-            } else if( objects_type[i] == 2 ) // Este triunghi
+            }
+            else if( objects_type[i] == 2 ) // Este triunghi
             {
-                if( length(spheres[(int)id.x].center - triangles[i].center) < 3.0f )
+                if( length(spheres[(int)id.x].center - triangles[i].center) < 5.0f )
                 {
                     const collision_data collision = has_collision_triangle_to_sphere(triangles[i], spheres[(int)id.x]);
                     if( collision.penetration > 0 )
@@ -412,17 +406,18 @@ void main(uint3 id: SV_DispatchThreadID)
         {
             if( objects_type[i] == 2 ) // Este triunghi
             {
-
+                // NEFUNCTIONAL PE MACOS
                 if (length(triangles[(int)id.x].center - triangles[i].center) < 3.0f)
                 {
                     const collision_data collision = has_collision_triangle_to_triangle_on_triangles(triangles[(int)id.x], triangles[i]);
                     if( collision.penetration > 0 )
                     {
-                        force += collision.normal;
+                        force += normalize(triangles[(int)id.x].center - triangles[i].center);
                     }
                 }
                 
-            } else if( objects_type[i] == 1 ) // Este sfera
+            } else
+                if( objects_type[i] == 1 ) // Este sfera
             {
                 if (length(triangles[(int)id.x].center - spheres[i].center) < 3.0f)
                 {
