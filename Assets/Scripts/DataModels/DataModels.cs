@@ -34,7 +34,6 @@ namespace DataModels
     {
         public Vector3 center;
 
-        public int index;
         public int verticesNum;
         public int indicesNum;
         public int verticesOffset;

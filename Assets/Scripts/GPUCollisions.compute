@@ -12,18 +12,14 @@ struct sphere_data
 
 struct triangle_data_simple
 {
-    int index;
     float3 center;
+    
     int vertices_num;
     int indices_num;
     int vertices_offset;
     int indices_offset;
 };
 
-struct physics_data
-{
-    float3 force;
-};
 
 int num_objects;
 int spheres_num;
@@ -36,7 +32,7 @@ StructuredBuffer<triangle_data_simple> triangles;
 StructuredBuffer<float3> triangle_vertices;
 StructuredBuffer<int> triangle_indices;
 
-RWStructuredBuffer<physics_data> physics;
+RWStructuredBuffer<float3> physic_forces;
 
 /*
  * INTERNAL DATA STRUCTURES
@@ -442,5 +438,5 @@ void main(uint3 id: SV_DispatchThreadID)
         }
     }
 
-    physics[(int)id.x].force = force;
+    physic_forces[(int)id.x] = force;
 }

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using DataModels;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -19,14 +20,14 @@ public class GPUCollisionsV2 : MonoBehaviour
 
     [SerializeField] private ObjectData[] objectsInfo;
 
-    [SerializeField] private PhysicsData[] physicsForces;
+    [SerializeField] private Vector3[] forces;
+
 
     private Stopwatch _stopwatch;
     private AABBModel cageAABB;
     private TriangleModel cageModel;
 
     private ModelType[] modelTypes;
-    private Vector3[] movementForces;
 
     private SphereModel[] sphereModels;
     private GameObject[] spheresGameObjects;
@@ -80,22 +81,22 @@ public class GPUCollisionsV2 : MonoBehaviour
         // Debug.Log(string.Join("|", triangleIndices.Select(x => $"{x}")));
         // Debug.Log(string.Join("|", triangleModelsSimple.Select(x => $"{x.verticesOffset}")));
 
-        // Debug.Log(string.Join("|", physicsForces.Select(x => $"{x.force}")));
+        Debug.Log(string.Join("|", forces.Select(x => $"{x}")));
 
         for (var i = 0; i < modelTypes.Length; i++)
         {
             // Check if physics has NaN values
-            if (float.IsNaN(physicsForces[i].force.x) || float.IsNaN(physicsForces[i].force.y) ||
-                float.IsNaN(physicsForces[i].force.z))
+            if (float.IsNaN(forces[i].x) || float.IsNaN(forces[i].y) ||
+                float.IsNaN(forces[i].z))
             {
                 Debug.LogError("Physics has NaN values");
-                physicsForces[i].force = Vector3.zero;
+                forces[i] = Vector3.zero;
             }
 
 
-            physicsForces[i].force += Gravity;
-            var forceDirection = physicsForces[i].force.normalized;
-            var forceMagnitude = physicsForces[i].force.magnitude;
+            forces[i] += Gravity;
+            var forceDirection = forces[i].normalized;
+            var forceMagnitude = forces[i].magnitude;
             var force = forceDirection * Mathf.Clamp(forceMagnitude, 0f, 1f);
 
             objectsInfo[i].velocity = objectsInfo[i].velocity * 0.99f + force * Time.deltaTime;
@@ -174,9 +175,8 @@ public class GPUCollisionsV2 : MonoBehaviour
         var totalVertices = 0;
         var totalIndices = 0;
 
-        movementForces = new Vector3[spheresGameObjects.Length + trianglesGameObjects.Length];
+        forces = new Vector3[spheresGameObjects.Length + trianglesGameObjects.Length];
         objectsInfo = new ObjectData[spheresGameObjects.Length + trianglesGameObjects.Length];
-        physicsForces = new PhysicsData[spheresGameObjects.Length + trianglesGameObjects.Length];
 
         for (var i = 0; i < objectsInfo.Length; i++)
         {
@@ -192,7 +192,7 @@ public class GPUCollisionsV2 : MonoBehaviour
                 );
             }
 
-            physicsForces[i].force = Vector3.zero;
+            forces[i] = Vector3.zero;
         }
 
         for (var i = 0; i < spheresGameObjects.Length; i++)
@@ -221,7 +221,6 @@ public class GPUCollisionsV2 : MonoBehaviour
 
             triangleModelsSimple[i] = new TriangleModelSimple
             {
-                index = i,
                 verticesNum = triangleMeshes[i].vertexCount,
                 indicesNum = triangleMeshes[i].triangles.Length,
             };
@@ -267,9 +266,9 @@ public class GPUCollisionsV2 : MonoBehaviour
 
     private void ResetForces()
     {
-        for (var i = 0; i < physicsForces.Length; i++)
+        for (var i = 0; i < forces.Length; i++)
         {
-            physicsForces[i] = new PhysicsData() { force = Vector3.zero };
+            forces[i] = Vector3.zero;
         }
     }
 
@@ -355,7 +354,7 @@ public class GPUCollisionsV2 : MonoBehaviour
             ComputeBufferType.Structured,
             ComputeBufferMode.Immutable);
         trianglesBuffer = new ComputeBuffer(triangleModelsSimple.Length,
-            TRIANGLE_MODEL_SIMPLE_STRIDE,
+            UnsafeUtility.SizeOf<TriangleModelSimple>(),
             ComputeBufferType.Structured,
             ComputeBufferMode.Immutable);
 
@@ -374,8 +373,8 @@ public class GPUCollisionsV2 : MonoBehaviour
             ComputeBufferType.Structured,
             ComputeBufferMode.Immutable);
 
-        physicsForcesBuffer = new ComputeBuffer(objectsInfo.Length,
-            PHYSICS_FORCES_STRIDE,
+        physicsForcesBuffer = new ComputeBuffer(forces.Length,
+            UnsafeUtility.SizeOf<Vector3>(),
             ComputeBufferType.Structured,
             ComputeBufferMode.Immutable);
 
@@ -390,7 +389,7 @@ public class GPUCollisionsV2 : MonoBehaviour
         collisionShader.SetBuffer(kernelId, "triangles", trianglesBuffer);
         collisionShader.SetBuffer(kernelId, "triangle_vertices", triangleVerticesBuffer);
         collisionShader.SetBuffer(kernelId, "triangle_indices", triangleIndicesBuffer);
-        collisionShader.SetBuffer(kernelId, "physics", physicsForcesBuffer);
+        collisionShader.SetBuffer(kernelId, "physic_forces", physicsForcesBuffer);
 
         collisionShader.SetInt("num_objects", objectsInfo.Length);
         collisionShader.SetInt("spheres_num", sphereModels.Length);
@@ -406,16 +405,16 @@ public class GPUCollisionsV2 : MonoBehaviour
         objectsTypeBuffer.SetData(modelTypes);
         triangleIndicesBuffer.SetData(triangleIndices);
         triangleVerticesBuffer.SetData(triangleVertices);
-        physicsForcesBuffer.SetData(physicsForces);
+        physicsForcesBuffer.SetData(forces);
 
-        collisionShader.SetInt("num_objects", objectsInfo.Length);
+        collisionShader.SetInt("num_objects", modelTypes.Length);
         collisionShader.SetInt("spheres_num", sphereModels.Length);
         collisionShader.SetInt("triangles_num", triangleModels.Length);
     }
 
     private void RetrieveDataFromBuffer()
     {
-        physicsForcesBuffer.GetData(physicsForces);
+        physicsForcesBuffer.GetData(forces);
     }
 
     private void ReleaseBuffers()
