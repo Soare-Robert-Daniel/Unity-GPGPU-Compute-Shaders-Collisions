@@ -331,12 +331,6 @@ public class GPUCollisionsV2 : MonoBehaviour
 
     private ComputeBuffer physicsForcesBuffer;
 
-    private const int OBJECT_DATA_STRIDE = sizeof(float) * (3 + 3 + 1);
-    private const int SPHERE_MODEL_STRIDE = sizeof(float) * (3 + 1);
-    private const int OBJECT_TYPE_STRIDE = sizeof(int);
-
-    private const int TRIANGLE_MODEL_SIMPLE_STRIDE = sizeof(float) * (3) + sizeof(int) * 5;
-    private const int PHYSICS_FORCES_STRIDE = sizeof(float) * 3;
 
     private int kernelId;
     [SerializeField] private int dispatchSize;
@@ -350,21 +344,22 @@ public class GPUCollisionsV2 : MonoBehaviour
         //     ComputeBufferType.Structured,
         //     ComputeBufferMode.Immutable);
         spheresBuffer = new ComputeBuffer(sphereModels.Length,
-            SPHERE_MODEL_STRIDE,
+            UnsafeUtility.SizeOf<SphereModel>(),
             ComputeBufferType.Structured,
             ComputeBufferMode.Immutable);
+
         trianglesBuffer = new ComputeBuffer(triangleModelsSimple.Length,
             UnsafeUtility.SizeOf<TriangleModelSimple>(),
             ComputeBufferType.Structured,
             ComputeBufferMode.Immutable);
 
         objectsTypeBuffer = new ComputeBuffer(modelTypes.Length,
-            OBJECT_TYPE_STRIDE,
+            sizeof(int),
             ComputeBufferType.Structured,
             ComputeBufferMode.Immutable);
 
         triangleVerticesBuffer = new ComputeBuffer(triangleVertices.Length,
-            sizeof(float) * 3,
+            UnsafeUtility.SizeOf<Vector3>(),
             ComputeBufferType.Structured,
             ComputeBufferMode.Immutable);
 
@@ -392,9 +387,6 @@ public class GPUCollisionsV2 : MonoBehaviour
         collisionShader.SetBuffer(kernelId, "physic_forces", physicsForcesBuffer);
 
         collisionShader.SetInt("num_objects", objectsInfo.Length);
-        collisionShader.SetInt("spheres_num", sphereModels.Length);
-        collisionShader.SetInt("triangles_num", triangleModels.Length);
-
     }
 
     private void SetDataToBuffer()

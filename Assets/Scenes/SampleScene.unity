@@ -589,13 +589,13 @@ MonoBehaviour:
   offsetHeight: {x: 0, y: 3, z: 0}
   random: 1
   randomRange: 1
-  cubesNumber: 1000
+  cubesNumber: 300
   cubeTemplate: {fileID: 8440513633421467054, guid: e7d3200e1c412eb49932e154bd3faa77,
     type: 3}
-  spheresNumber: 500
+  spheresNumber: 300
   sphereTemplate: {fileID: 8413638373159485784, guid: 55f69da2b7f2a438c9a3df14956f3172,
     type: 3}
-  cylindersNumber: 2500
+  cylindersNumber: 300
   cylinderTemplate: {fileID: 203231255}
 --- !u!114 &1106882906
 MonoBehaviour:
@@ -640,7 +640,7 @@ MonoBehaviour:
   triangleVertices: []
   triangleIndices: 
   objectsInfo: []
-  physicsForces: []
+  forces: []
   collisionShader: {fileID: 7200000, guid: 44042dd6b3f641d582d299c6672e50dc, type: 3}
   dispatchSize: 0
   threadGroupSize: 0
